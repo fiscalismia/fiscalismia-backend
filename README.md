@@ -245,17 +245,26 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 
    **PROD Backend & Cloud DB**
    NOTE: `DB_CONNECTION_URL` to remote postgres must be set in `.env` file.
+   NOTE: `ENVIRONMENT` for local testing must be development, otherwise cors of undefined will deny access.
 
    ```bash
+   # NET_BIND_SERVICE allows non-priviledged service user in container to bind to ports below 1024
+   # also requires to adjust sysctl config on linux host since kernels prevent this behavior
+   # this command sets it ephemerally for the session and is lost after reboot.
+   sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+
    docker compose down --volumes
    docker compose up --build --detach --no-deps fiscalismia-frontend
+
    podman build \
       --pull \
       --no-cache \
       -f "Dockerfile" \
       --build-arg BUILD_VERSION=0.9 \
+      --build-arg ENVIRONMENT=development \
       -t fiscalismia-backend:latest \
       "."
+
    podman run \
       --name fiscalismia-backend \
       --env-file .env \
@@ -264,7 +273,8 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       -v $PWD/src:/fiscalismia-backend/src \
       -v $PWD/public:/fiscalismia-backend/public \
       --net fiscalismia-network \
-      -p 3002:3002 \
+      --cap-add=NET_BIND_SERVICE \
+      -p 80:80 \
       fiscalismia-backend:latest
    ```
 

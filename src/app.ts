@@ -31,7 +31,7 @@ const allowedOrigins = [
   'http://localhost:3001', // local frontend
   'http://localhost:3002', // local backend (persisted images)
   `https://www.${config.PUBLIC_DOMAIN}`,
-  `https://www.demo.${config.PUBLIC_DOMAIN}`
+  `https://www.${config.PUBLIC_DEMO_DOMAIN}`
 ];
 
 const corsOptions = {
@@ -60,22 +60,24 @@ app.use(
   helmet({
     // Set 'Content-Security-Policy' to a custom value.
     contentSecurityPolicy: {
+      /* eslint-disable quotes */
       directives: {
         // By default, allow loading resources from the same origin.
-        defaultSrc: ['\'self\''],
+        defaultSrc: ["'self'"],
         // Allow scripts from the same origin and inline scripts.
-        scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         // Allow styles from the same origin and inline styles.
-        styleSrc: ['\'self\'', '\'unsafe-inline\''],
+        styleSrc: ["'self'", "'unsafe-inline'"],
         // Allow images from the same origin, data uris and the backend-server
-        imgSrc: ['\'self\'', 'data:'],
+        imgSrc: ["'self'", 'data:'],
         // Allow fonts from the same origin.
-        fontSrc: ['\'self\''],
+        fontSrc: ["'self'"],
         // Specify the valid sources for objects.
-        objectSrc: ['\'none\''],
+        objectSrc: ["'none'"],
         // Instructs the browser to upgrade all insecure HTTP requests to HTTPS.
         upgradeInsecureRequests: []
       }
+      /* eslint-enable quotes */
     },
     // Set 'Referrer-Policy' to a value that balances security and usability.
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
