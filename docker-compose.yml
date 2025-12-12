@@ -55,7 +55,7 @@ services:
     container_name: fiscalismia-frontend
     build:
       context: ../fiscalismia-frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       pull: true
     env_file:
       - ../fiscalismia-frontend/.env

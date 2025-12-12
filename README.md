@@ -222,7 +222,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 
 5. **Option 5: Individual Containers**
 
-   **DEV Backend && local DB**
+   **DEV Backend & DEV Frontend & local DB**
    ```bash
    docker compose down --volumes
    docker compose up --build --detach --no-deps fiscalismia-frontend fiscalismia-postgres
@@ -243,8 +243,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       fiscalismia-backend-dev:latest
    ```
 
-   **PROD Backend & Cloud DB**
-   NOTE: `DB_CONNECTION_URL` to remote postgres must be set in `.env` file.
+   **PROD Backend & DEV Frontend & local DB**
    NOTE: `ENVIRONMENT` for local testing must be development, otherwise cors of undefined will deny access.
 
    ```bash
@@ -274,7 +273,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       -v $PWD/public:/fiscalismia-backend/public \
       --net fiscalismia-network \
       --cap-add=NET_BIND_SERVICE \
-      -p 80:80 \
+      -p 80:3002 \
       fiscalismia-backend:latest
    ```
 

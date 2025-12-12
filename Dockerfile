@@ -5,6 +5,7 @@
 # initialize global scope build args by supplying --build-arg flag in podman build
 ARG BUILD_VERSION
 ARG ENVIRONMENT
+ARG BACKEND_PORT_OVERRIDE
 
 FROM node:20.12.2-alpine3.19 AS build
 WORKDIR /build-dir/
