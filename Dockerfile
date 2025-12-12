@@ -1,6 +1,6 @@
-#     __               __  
-#    |__) |  | | |    |  \ 
-#    |__) \__/ | |___ |__/ 
+#     __               __
+#    |__) |  | | |    |  \
+#    |__) \__/ | |___ |__/
 ARG BUILD_VERSION
 
 FROM node:20.12.2-alpine3.19 AS build
@@ -8,7 +8,7 @@ WORKDIR /build-dir/
 COPY package-lock.json ./
 COPY package.json ./
 COPY tsconfig.json ./
-RUN npm ci --only=production=false
+RUN npm ci
 COPY src/ ./src
 RUN npm run build
 
@@ -32,7 +32,6 @@ ENV NODE_ENV="production"
 
 # Install production packages
 RUN npm ci --only=production
-RUN npm cache clean --force
 COPY --from=build /build-dir/dist ./dist
 
 # copy db init scripts for on-demand user schema creation

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 PG_CONNECTION="-U fiscalismia_api -d fiscalismia -v ON_ERROR_STOP=1"
 USER_SCHEMA="private_admin"
 SEARCH_PATH_CMD="SET search_path TO $USER_SCHEMA"

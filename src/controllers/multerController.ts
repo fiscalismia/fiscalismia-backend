@@ -114,8 +114,11 @@ const deleteFoodItemImg = asyncHandler(async (request: Request, response: Respon
     if (result.rows[0]?.filepath) {
       const results = { results: result ? result.rows : null };
       fs.unlink(result.rows[0].filepath, (err: unknown) => {
-        if (err instanceof Error) throw new Error('Server Filesystem Image deletion failed');
-        logger.info(`${result.rows[0].filepath} was successfully DELETED.`);
+        if (err instanceof Error) {
+          logger.error('Server Filesystem Image deletion failed');
+        } else {
+          logger.info(`${result.rows[0].filepath} was successfully DELETED.`);
+        }
       });
       await client.query('COMMIT');
       response.status(200).send(results);

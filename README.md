@@ -185,15 +185,13 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    ```bash
    cd ~/git/fiscalismia-backend
    docker compose down --volumes
-
-   # with local db in development mode
    docker compose up --build
 
    # with cloud db in development mode
    CLOUD_DB=true docker compose up --build
    ```
 
-2. **Option 2: Locally with Dev DB**
+2. **Option 2: Local Backend with Dev DB**
 
    ```bash
    cd ~/git/fiscalismia-backend
@@ -202,7 +200,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    npm run dev
    ```
 
-3. **Option 3: Locally with Cloud DB**
+3. **Option 3: Local Backend with Cloud DB**
 
    ```bash
    cd ~/git/fiscalismia-backend
@@ -211,7 +209,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    npm run neon-dev
    ```
 
-4. **Option 4: Locally with Cloud Prod**
+4. **Option 4: Local Prod Backend with Cloud DB**
 
    Run only the backend locally pointing to cloud db defined in `.env` file key `DB_CONNECTION_URL`
    ```bash
@@ -222,57 +220,55 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    npm run prod
    ```
 
-5. **Option 5: Podman-Docker**
+5. **Option 5: Individual Containers**
 
-   Development Database
+   **DEV Backend && local DB**
    ```bash
-   docker compose up --build -detach --no-deps fiscalismia-postgres
+   docker compose down --volumes
+   docker compose up --build --detach --no-deps fiscalismia-frontend fiscalismia-postgres
+   podman build \
+      --pull \
+      --no-cache \
+      -f "Dockerfile.dev" \
+      -t fiscalismia-backend-dev:latest "."
+   podman run \
+      --name fiscalismia-backend-dev \
+      --env-file .env \
+      --rm \
+      -it \
+      -v $PWD/src:/fiscalismia-backend/src \
+      -v $PWD/public:/fiscalismia-backend/public \
+      --net fiscalismia-network \
+      -p 3002:3002 \
+      fiscalismia-backend-dev:latest
    ```
 
-   <details open>
-   <summary><b>Podman Run (Linux Syntax)</b></summary>
-
-   Run only the backend dev container pointing to local db defined in `.env` file keys.
-   ```bash
-   podman build --pull --no-cache --rm -f "Dockerfile.dev" -t fiscalismia-backend-dev:latest "."
-   podman run -v $PWD/src:/fiscalismia-backend/src -v $PWD/public:/fiscalismia-backend/public --env-file .env --net fiscalismia-network --rm -it -p 3002:3002 --name fiscalismia-backend-dev fiscalismia-backend-dev:latest
-   ```
-   </details>
-   <details closed>
-   <summary><b>Podman Run (Windows Syntax)</b></summary>
-
-   Run only the backend dev container pointing to local db defined in `.env` file keys.
-   ```bash
-   podman build --pull --no-cache --rm -f "Dockerfile.dev" -t fiscalismia-backend-dev:latest "."
-   podman run -v %cd%\src:/fiscalismia-backend/src -v %cd%\public:/fiscalismia-backend/public --env-file .env --net fiscalismia-network --rm -it -p 3002:3002 --name fiscalismia-backend-dev fiscalismia-backend-dev:latest
-   ```
-   </details>
-
-   ------
-
-   <details closed>
-   <summary><b>Production build with cloud database (Linux Syntax)</b></summary>
-
+   **PROD Backend & Cloud DB**
    NOTE: `DB_CONNECTION_URL` to remote postgres must be set in `.env` file.
 
    ```bash
-   podman build --pull --no-cache --rm -f "Dockerfile" -t fiscalismia-backend:latest "."
-   podman run --network fiscalismia-network -v $PWD/public:/fiscalismia-backend/public --env-file .env --net fiscalismia-network --rm -it -p 3002:3002 --name fiscalismia-backend fiscalismia-backend:latest
+   docker compose down --volumes
+   docker compose up --build --detach --no-deps fiscalismia-frontend
+   podman build \
+      --pull \
+      --no-cache \
+      -f "Dockerfile" \
+      --build-arg BUILD_VERSION=0.9 \
+      -t fiscalismia-backend:latest \
+      "."
+   podman run \
+      --name fiscalismia-backend \
+      --env-file .env \
+      --rm \
+      -it \
+      -v $PWD/src:/fiscalismia-backend/src \
+      -v $PWD/public:/fiscalismia-backend/public \
+      --net fiscalismia-network \
+      -p 3002:3002 \
+      fiscalismia-backend:latest
    ```
-   </details>
 
    ------
-
-   <details closed>
-   <summary><b>Production build with cloud database (Windows Syntax)</b></summary>
-
-   NOTE: `DB_CONNECTION_URL` to remote postgres must be set in `.env` file.
-
-   ```bash
-   podman build --pull --no-cache --rm -f "Dockerfile" -t fiscalismia-backend:latest "."
-   podman run --network fiscalismia-network -v %cd%\public:/fiscalismia-backend/public --env-file .env --net fiscalismia-network --rm -it -p 3002:3002 --name fiscalismia-backend fiscalismia-backend:latest
-   ```
-   </details>
 
 ## Testing
 

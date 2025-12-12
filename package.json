@@ -10,7 +10,7 @@
     "snykCodeAnalysis": "node src/tests/snykCodeAnalysis",
     "snykDependencyAnalysis": "node src/tests/snykDependencyAnalysis",
     "lint": "eslint .",
-    "prod": "cross-env NODE_ENV=production CLOUD_DB=true node build/server.js",
+    "prod": "cross-env NODE_ENV=production CLOUD_DB=true node dist/server.js",
     "dev": "cross-env NODE_ENV=development nodemon src/server.ts --ignore tests/",
     "neon-dev": "cross-env NODE_ENV=development CLOUD_DB=true nodemon src/server.ts --ignore tests/",
     "docker-dev": "cross-env NODE_ENV=docker-development nodemon --watch src --legacy-watch --delay 2500ms  src/server.ts --ignore tests/",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hangrybear666/fiscalismia-backend.git"
+    "url": "git+https://github.com/fiscalismia/fiscalismia-backend.git"
   },
   "keywords": [
     "fiscalis",
@@ -28,9 +28,9 @@
   "author": "Corey Lauster",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hangrybear666/fiscalismia-backend/issues"
+    "url": "https://github.com/fiscalismia/fiscalismia-backend/issues"
   },
-  "homepage": "https://github.com/hangrybear666/fiscalismia-backend#readme",
+  "homepage": "https://github.com/fiscalismia/fiscalismia-backend#readme",
   "dependencies": {
     "cors": "^2.8.5",
     "cross-env": "^10.0.0",
