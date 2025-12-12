@@ -3,11 +3,14 @@
 ## Unfinished Tasks
 
 ### High Prio
+- Add Supertest for healthcheck /hc
+- Add Supertest for databaseHealthCheck /db_hc
+- Evaluate if ssl can be used for local development database setting ssl = true
+
+### Medium Prio
 - Add POST Route for Variable Expenses Staging and think about how to trigger and evaluate ETL process
 - Add Supertest for evaluation of this post route and the ETL process
 
-### Medium Prio
-- Add Health Check route returning server uptime statistics
 ### Low Prio
 ### Before Deploying
 - Rethink public folder storage for production env -> Persistence with backup / HA

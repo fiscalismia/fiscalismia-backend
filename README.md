@@ -253,14 +253,13 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    sudo sysctl net.ipv4.ip_unprivileged_port_start=80
 
    docker compose down --volumes
-   docker compose up --build --detach --no-deps fiscalismia-frontend
+   docker compose up --build --detach --no-deps fiscalismia-frontend fiscalismia-postgres
 
    podman build \
-      --pull \
-      --no-cache \
       -f "Dockerfile" \
       --build-arg BUILD_VERSION=0.9 \
-      --build-arg ENVIRONMENT=development \
+      --build-arg ENVIRONMENT=docker-development \
+      --build-arg CLOUD_DB=false \
       -t fiscalismia-backend:latest \
       "."
 

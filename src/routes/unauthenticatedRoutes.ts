@@ -1,7 +1,7 @@
 const unauthenticatedRoutes = require('express').Router();
 const { loginWithUserCredentials } = require('../controllers/create_postgresController');
 const { createUserCredentialsAndSchema } = require('../controllers/create_postgresUserSchema');
-const { getIpAddress } = require('../controllers/read_postgresController');
+const { getIpAddress, healthCheck, databaseHealthCheck } = require('../controllers/read_postgresController');
 const { getFoodItemImg } = require('../controllers/multerController');
 const { unauthenticatedRateLimiter, imageRetrievalRateLimiter } = require('../middleware/rateLimiter'); // 👈 Import limiters
 
@@ -13,6 +13,8 @@ const { unauthenticatedRateLimiter, imageRetrievalRateLimiter } = require('../mi
 unauthenticatedRoutes.post('/um/login', unauthenticatedRateLimiter, loginWithUserCredentials);
 unauthenticatedRoutes.post('/um/credentials', unauthenticatedRateLimiter, createUserCredentialsAndSchema);
 unauthenticatedRoutes.get('/ip', getIpAddress);
+unauthenticatedRoutes.get('/hc', healthCheck);
+unauthenticatedRoutes.get('/db_hc', databaseHealthCheck);
 
 /**
  * The Image is queried not via axios but via an url in the src location within the html page

@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
+const os = require('os');
 import { Request, Response } from 'express';
 const { pool } = require('../utils/pgDbService');
 
@@ -38,6 +39,60 @@ const getIpAddress = asyncHandler(async (request: Request, response: Response) =
   logger.http('read_postgresController received GET to /api/fiscalismia/ip');
   response.json({ ip: request.ip });
 });
+
+/**
+ * @description sends back status 200 OK on health check
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/hc
+ */
+const healthCheck = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('read_postgresController received GET to /api/fiscalismia/hc');
+  const serverUptime = Number((os.uptime() / 3600).toFixed(2));
+  const nodeUptime = Number((process.uptime() / 3600).toFixed(2));
+  const hostname = os.hostname();
+  const platform = os.platform();
+  const kernel = os.release();
+  const machine = os.machine();
+  const loadAvg = os.loadavg();
+  const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(3);
+  const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(3);
+  response.status(200).send({
+    status: 'OK',
+    node_uptime_hours: nodeUptime,
+    server_uptime_hours: serverUptime,
+    hostname: hostname,
+    platform: platform,
+    machine: machine,
+    kernel: kernel,
+    loadAvg: loadAvg,
+    freeMem: `${freeMem} GB`,
+    totalMem: `${totalMem} GB`
+  });
+});
+
+/**
+ * @description sends back status 200 OK on health check
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/db_hc
+ */
+const databaseHealthCheck = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('read_postgresController received GET to /api/fiscalismia/db_hc');
+  const client = await pool.connect();
+  const result = await client.query(`
+    SELECT
+      version() AS postgres_version,
+      current_timestamp - pg_postmaster_start_time() AS up_time
+  `);
+  if (result.rows && result.rows.length > 0 && result.rows[0].postgres_version && result.rows[0].up_time) {
+    response.status(200).send(result.rows[0]);
+  } else {
+    response.status(503).send({ status: 'Service Unavailable' });
+  }
+  client.release();
+});
+
 /**
  * @description query fetching all data from fixed_costs table
  * @method HTTP GET
@@ -475,6 +530,8 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
 module.exports = {
   getTestData,
   getIpAddress,
+  healthCheck,
+  databaseHealthCheck,
 
   getUserSpecificSettings,
 

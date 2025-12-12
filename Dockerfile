@@ -5,7 +5,7 @@
 # initialize global scope build args by supplying --build-arg flag in podman build
 ARG BUILD_VERSION
 ARG ENVIRONMENT
-ARG BACKEND_PORT_OVERRIDE
+ARG CLOUD_DB=true
 
 FROM node:20.12.2-alpine3.19 AS build
 WORKDIR /build-dir/
@@ -34,12 +34,14 @@ COPY LICENSE ./
 # consume build arguments to expose them in subsequent stages
 ARG BUILD_VERSION
 ARG ENVIRONMENT
+ARG CLOUD_DB
 # init environment variables /w build arguments, then read in supervisord.conf
 ENV BUILD_VERSION=$BUILD_VERSION
 ENV ENVIRONMENT=$ENVIRONMENT
+ENV CLOUD_DB=$CLOUD_DB
 
 # Install production packages
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 COPY --from=build /build-dir/dist ./dist
 
 # copy db init scripts for on-demand user schema creation
