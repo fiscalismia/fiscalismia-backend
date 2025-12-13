@@ -68,5 +68,5 @@ RUN chown -R nodejs:nodejs /fiscalismia-backend
 # Listen on HTTP/S Port
 EXPOSE 80
 
-# Start Supervisor to manage Nginx and Uvicorn
+# Start Supervisor to manage the Nginx and NodeJS unix processes 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
