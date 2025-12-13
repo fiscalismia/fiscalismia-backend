@@ -10,7 +10,7 @@ const API_ADDRESS = '/api/fiscalismia';
 const PROTOCOL = `${isNonProd ? 'http' : 'https'}`;
 const SERVER_ADDRESS = `${PROTOCOL}://${process.env.HOST_ADDRESS ? process.env.HOST_ADDRESS : 'localhost'}:${BACKEND_PORT}${API_ADDRESS}`;
 const ROOT_URL = `${PROTOCOL}://${process.env.HOST_ADDRESS}:${BACKEND_PORT}`;
-const RATE_LIMIT_MULTIPLICATOR = 1.0; // GLOBAL MODIFIER INCREASING RATE LIMIT REQUESTS
+const RATE_LIMIT_MULTIPLICATOR = process.env.NODE_ENV === 'test' ? 1000 : 1; // GLOBAL MODIFIER INCREASING RATE LIMIT REQUESTS
 module.exports = {
   PUBLIC_DOMAIN,
   PUBLIC_DEMO_DOMAIN,
