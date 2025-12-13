@@ -181,7 +181,7 @@ jobs:
           org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.description="Demo to play around with Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data."
+          org.opencontainers.image.description=Demo to play around with Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data.
           org.opencontainers.image.licenses=MIT
 
     - name: Buildah Image Creation - Production
@@ -202,7 +202,7 @@ jobs:
           org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.description="Production Ready Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data."
+          org.opencontainers.image.description=Production Ready Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data.
           org.opencontainers.image.licenses=MIT
 
     - name: Log in to Github Container Registry
