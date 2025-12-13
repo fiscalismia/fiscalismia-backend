@@ -153,7 +153,11 @@ jobs:
       uses: actions/checkout@v5
       # https://github.com/actions/checkout
 
-    - name: Set Buildeah Build Timestamp
+    - name: AutoIncrement Version
+      run: |
+        echo "BUILD_VERSION=0.9.1" >> $GITHUB_ENV
+
+    - name: Set Buildah Build Timestamp
       shell: bash
       run: |
         # Store the current time in ISO 8601 format (required by OCI spec)
@@ -165,18 +169,19 @@ jobs:
       # https://github.com/redhat-actions/buildah-build/releases
       with:
         image: fiscalismia-backend-demo
-        tags: latest ${{ github.sha }}
+        tags: latest ${{ env.BUILD_VERSION }}
         containerfiles: |
           ./Dockerfile
         build-args: |
-          BACKEND_VERSION=0.9.1
+          BACKEND_VERSION=${{ env.BUILD_VERSION }}
           ENVIRONMENT=docker-development
           CLOUD_DB=false
         labels: |
-          org.opencontainers.image.version=0.9.1
-          org.opencontainers.image.created=$BUILD_TIMESTAMP
+          org.opencontainers.image.version=${{ env.BUILD_VERSION }}
+          org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.description="Demo to play around with Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data."
           org.opencontainers.image.licenses=MIT
 
     - name: Buildah Image Creation - Production
@@ -185,18 +190,19 @@ jobs:
       # https://github.com/redhat-actions/buildah-build/releases
       with:
         image: fiscalismia-backend
-        tags: latest ${{ github.sha }}
+        tags: latest ${{ env.BUILD_VERSION }}
         containerfiles: |
           ./Dockerfile
         build-args: |
-          BACKEND_VERSION=0.9.1
+          BACKEND_VERSION=${{ env.BUILD_VERSION }}
           ENVIRONMENT=production
           CLOUD_DB=true
         labels: |
-          org.opencontainers.image.version=0.9.1
-          org.opencontainers.image.created=$BUILD_TIMESTAMP
+          org.opencontainers.image.version=${{ env.BUILD_VERSION }}
+          org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.description="Production Ready Node.JS REST API Server handling authentication & all routes to the Postgres Database for Fiscalismia, a Web Service for visualizing, analyzing, aggregating, importing and exporting personal finance data."
           org.opencontainers.image.licenses=MIT
 
     - name: Log in to Github Container Registry
