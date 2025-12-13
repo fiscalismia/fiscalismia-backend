@@ -8,10 +8,9 @@ on:
   pull_request:
     branches:
       - main
-      - pipeline_testing
 
 jobs:
-  test:
+  test-and-security-scan:
     runs-on: ubuntu-latest
 
     services:
@@ -19,7 +18,8 @@ jobs:
         image: postgres:16.3-alpine3.20
         env:
           POSTGRES_USER: fiscalismia_api
-          #default is already localhost
+          # this .env variable is only required to db container dns name in docker-development
+          # otherwise defaults to localhost in src\utils\pgDbService.ts
           #POSTGRES_HOST: localhost
           POSTGRES_DB: fiscalismia
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -35,10 +35,12 @@ jobs:
 
     steps:
     - name: Checkout SCM
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
+      # https://github.com/actions/checkout
 
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6.1.0
+      # https://github.com/actions/setup-node
       with:
         node-version: '20.12.2'
 
@@ -60,11 +62,12 @@ jobs:
     #     snyk auth $SNYK_TOKEN
     #     npm run snykCodeAnalysis
 
-    # - name: Snyk Dependency Security Analysis
-    #   run: npm run snykDependencyAnalysis
+    - name: Snyk Dependency Security Analysis
+      run: npm run snykDependencyAnalysis
 
     - name: Publish Typecheck & Eslint & Snyk Reports
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5.0.0
+      # https://github.com/actions/upload-artifact
       with:
         name: Fiscalismia-Backend-Reports
         path: |
@@ -127,36 +130,95 @@ jobs:
       env:
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         POSTGRES_USER: fiscalismia_api
-        #this .env variable is only needed in docker-development, otherwise defaults to localhost in src\utils\pgDbService.ts
+        # this .env variable is only required to db container dns name in docker-development
+        # otherwise defaults to localhost in src\utils\pgDbService.ts
         #POSTGRES_HOST: localhost
         POSTGRES_DB: fiscalismia
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_PORT: 5432
       run: npm test
 
-  build:
+  build-and-publish-image:
     runs-on: ubuntu-latest
+    needs:
+      - test-and-security-scan
 
     permissions:
       contents: read
-      packages: write
       actions: read
+      packages: write # to publish to ghcr.io
 
     steps:
     - name: Checkout SCM
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
+      # https://github.com/actions/checkout
 
-    - name: Build Docker Image
-      run: docker build --pull --rm -f "Dockerfile" -t ghcr.io/hangrybear666/fiscalismia-backend:latest "."
+    - name: Buildah Image Creation - Demo
+      id: build-demo-image
+      uses: redhat-actions/buildah-build@v2.13
+      # https://github.com/redhat-actions/buildah-build/releases
+      with:
+        image: fiscalismia-backend-demo
+        tags: latest ${{ github.sha }}
+        containerfiles: |
+          ./Dockerfile
+        build-args: |
+          BACKEND_VERSION=0.9.1
+          ENVIRONMENT=docker-development
+          CLOUD_DB=false
 
-    - name: Login to Github Container Registry
-      uses: docker/login-action@v3
+    - name: Buildah Image Creation - Production
+      id: build-production-image
+      uses: redhat-actions/buildah-build@v2.13
+      # https://github.com/redhat-actions/buildah-build/releases
+      with:
+        image: fiscalismia-backend
+        tags: latest ${{ github.sha }}
+        containerfiles: |
+          ./Dockerfile
+        build-args: |
+          BACKEND_VERSION=0.9.1
+          ENVIRONMENT=production
+          CLOUD_DB=true
+
+    - name: Log in to Github Container Registry
+      if: github.event_name == 'push'
+      uses: redhat-actions/podman-login@v1.7
+      # https://github.com/redhat-actions/podman-login/releases
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Publish Docker Image to GHCR
-      run: docker push ghcr.io/hangrybear666/fiscalismia-backend:latest
+    - name: Push Demo Image to GHCR
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      id: push-demo-to-ghcr
+      uses: redhat-actions/push-to-registry@v2.8
+      # https://github.com/redhat-actions/push-to-registry/releases
+      with:
+        image: ${{ steps.build-demo-image.outputs.image }}
+        tags: ${{ steps.build-demo-image.outputs.tags }}
+        registry: ghcr.io/fiscalismia
 
+    - name: Push Production Image to GHCR
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      id: push-prod-to-ghcr
+      uses: redhat-actions/push-to-registry@v2.8
+      # https://github.com/redhat-actions/push-to-registry/releases
+      with:
+        image: ${{ steps.build-production-image.outputs.image }}
+        tags: ${{ steps.build-production-image.outputs.tags }}
+        registry: ghcr.io/fiscalismia
 
+    - name: Print image url
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        echo "Production Image pushed to ${{ steps.push-prod-to-ghcr.outputs.registry-paths }}"
+        echo "Demo Image pushed to ${{ steps.push-demo-to-ghcr.outputs.registry-paths }}"
+
+    - name: Print build success (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "Build successful for PR"
+        echo "Demo Image would be: ${{ steps.build-demo-image.outputs.image }}:${{ steps.build-demo-image.outputs.tags }}"
+        echo "Production Image would be: ${{ steps.build-production-image.outputs.image }}:${{ steps.build-production-image.outputs.tags }}"

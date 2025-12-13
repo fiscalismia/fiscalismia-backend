@@ -3,7 +3,7 @@
 #    |__) \__/ | |___ |__/
 
 # initialize global scope build args by supplying --build-arg flag in podman build
-ARG BUILD_VERSION
+ARG BACKEND_VERSION
 ARG ENVIRONMENT
 ARG CLOUD_DB=true
 
@@ -32,11 +32,12 @@ COPY package-lock.json ./
 COPY package.json ./
 COPY LICENSE ./
 # consume build arguments to expose them in subsequent stages
-ARG BUILD_VERSION
+ARG BACKEND_VERSION
 ARG ENVIRONMENT
 ARG CLOUD_DB
 # init environment variables /w build arguments, then read in supervisord.conf
-ENV BUILD_VERSION=$BUILD_VERSION
+ENV BACKEND_VERSION=$BACKEND_VERSION
+ENV ANSIBLE_BUILD_VERSION=$BACKEND_VERSION
 ENV ENVIRONMENT=$ENVIRONMENT
 ENV CLOUD_DB=$CLOUD_DB
 
