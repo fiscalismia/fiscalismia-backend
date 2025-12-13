@@ -153,6 +153,12 @@ jobs:
       uses: actions/checkout@v5
       # https://github.com/actions/checkout
 
+    - name: Set Buildeah Build Timestamp
+      shell: bash
+      run: |
+        # Store the current time in ISO 8601 format (required by OCI spec)
+        echo "BUILD_TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
     - name: Buildah Image Creation - Demo
       id: build-demo-image
       uses: redhat-actions/buildah-build@v2.13
@@ -166,6 +172,12 @@ jobs:
           BACKEND_VERSION=0.9.1
           ENVIRONMENT=docker-development
           CLOUD_DB=false
+        labels: |
+          org.opencontainers.image.version=0.9.1
+          org.opencontainers.image.created=$BUILD_TIMESTAMP
+          org.opencontainers.image.source=${{ github.repositoryUrl }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses=MIT
 
     - name: Buildah Image Creation - Production
       id: build-production-image
@@ -180,6 +192,12 @@ jobs:
           BACKEND_VERSION=0.9.1
           ENVIRONMENT=production
           CLOUD_DB=true
+        labels: |
+          org.opencontainers.image.version=0.9.1
+          org.opencontainers.image.created=$BUILD_TIMESTAMP
+          org.opencontainers.image.source=${{ github.repositoryUrl }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses=MIT
 
     - name: Log in to Github Container Registry
       if: github.event_name == 'push'
