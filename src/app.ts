@@ -28,7 +28,9 @@ app.set('trust proxy', 0);
  */
 const isNonProd = process.env.NODE_ENV !== 'production';
 const allowedOrigins = [
-  'http://localhost:3001', // local frontend
+  'http://localhost:3001', // local frontend development
+  'http://localhost:4173', // local frontend development vite preview
+  'http://localhost:443', // local frontend production testing
   'http://localhost:3002', // local backend (persisted images)
   `https://www.${config.PUBLIC_DOMAIN}`,
   `https://www.${config.PUBLIC_DEMO_DOMAIN}`
@@ -44,7 +46,7 @@ const corsOptions = {
       callback(new Error(`Origin ${origin} not allowed by CORS. Must be in allowedOrigins in backend.`));
     }
   },
-  methods: 'GET,POST,PUT,DELETE', // Only allow these specific HTTP methods
+  methods: 'GET,POST,PUT,DELETE,OPTIONS', // Only allow these specific HTTP methods
   allowedHeaders: 'Content-Type,Authorization', // Allow required headers for JSON and authentication
   credentials: true, // Essential for allowing cookies/sessions to be sent and received
   maxAge: 3600 // 1 hour Pre-flight Cache for OPTIONS
@@ -98,15 +100,6 @@ app.use(
     hidePoweredBy: true
   })
 );
-
-/**
- * static is a middleware for returning files
- * allows express to serve static content such as webpages in .html format
- * http GET request to ROOT of URL will look in build folder for specified file
- * http GET request to ROOT of URL will serve index.html if no file specified
- * 404 otherwise
- */
-// app.use(express.static('build'))
 
 // Generic Rate Limiter applied only if none more specific have been applied
 app.use(genericFallbackRateLimiter);

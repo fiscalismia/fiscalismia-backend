@@ -257,22 +257,23 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 
    podman build \
       -f "Dockerfile" \
-      --build-arg BUILD_VERSION=0.9 \
+      --build-arg BUILD_VERSION=0.9.0 \
       --build-arg ENVIRONMENT=docker-development \
       --build-arg CLOUD_DB=false \
       -t fiscalismia-backend:latest \
       "."
 
+   chmod -R a+w $PWD/public/img/uploads/
    podman run \
       --name fiscalismia-backend \
       --env-file .env \
       --rm \
       -it \
-      -v $PWD/src:/fiscalismia-backend/src \
-      -v $PWD/public:/fiscalismia-backend/public \
+      -v $PWD/public:/fiscalismia-backend/public:z \
       --net fiscalismia-network \
+      --sysctl net.ipv4.ip_unprivileged_port_start=0 \
       --cap-add=NET_BIND_SERVICE \
-      -p 80:3002 \
+      -p 80:80 \
       fiscalismia-backend:latest
    ```
 
