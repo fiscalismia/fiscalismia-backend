@@ -31,6 +31,41 @@ describe('supertest REST API testing entire REST functionality', () => {
   const newDbUser = 'hangrybear';
   const newDbUserSchema = `private_${newDbUser}`;
 
+  //          ___           ___          __        ___  __        __
+  //    |__| |__   /\  |     |  |__|    /  ` |__| |__  /  ` |__/ /__`
+  //    |  | |___ /~~\ |___  |  |  |    \__, |  | |___ \__, |  \ .__/
+  test('HEALTH CHECK backend connectivity', (done) => {
+    request(app)
+      .get(`${ROOT_URL}/hc`)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err: unknown, res: request.Response) => {
+        if (err instanceof Error) return done(err);
+        expect(res.body).toBeDefined();
+        expect(res.body.status).toBeDefined();
+        expect(res.body.status).toEqual('OK');
+        expect(res.body.node_uptime_hours).toBeDefined();
+        expect(res.body.server_uptime_hours).toBeDefined();
+        return done();
+      });
+  });
+
+  test('HEALTH CHECK database connectivity', (done) => {
+    request(app)
+      .get(`${ROOT_URL}/db_hc`)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err: unknown, res: request.Response) => {
+        if (err instanceof Error) return done(err);
+        expect(res.body).toBeDefined();
+        expect(res.body.status).toBeDefined();
+        expect(res.body.status).toEqual('OK');
+        expect(res.body.postgres_version).toBeDefined();
+        expect(res.body.up_time).toBeDefined();
+        return done();
+      });
+  });
+
   //              ___          __   ___  __        ___  __  ___  __
   //     /\  |  |  |  |__|    |__) |__  /  \ |  | |__  /__`  |  /__`
   //    /~~\ \__/  |  |  |    |  \ |___ \__X \__/ |___ .__/  |  .__/
@@ -266,10 +301,10 @@ describe('supertest REST API testing entire REST functionality', () => {
     const client = await pool.connect();
     try {
       const sql = `SELECT
-        schemaname, COUNT(tablename) as cnt
-      FROM pg_catalog.pg_tables
-      where schemaname in ('${userSchema}','${newDbUserSchema}','public')
-      group by schemaname`;
+          schemaname, COUNT(tablename) as cnt
+        FROM pg_catalog.pg_tables
+        where schemaname in ('${userSchema}','${newDbUserSchema}','public')
+        group by schemaname`;
       await client.query('BEGIN');
       const result = await client.query(sql);
       expect(result.rows.length).toBeGreaterThan(0);
@@ -654,22 +689,22 @@ describe('supertest REST API testing entire REST functionality', () => {
   //    |__/ |___ |___ |___  |  |___       |  \ |___ \__X \__/ |___ .__/  |  .__/
   //
   /**
-    _____ ______     __     ___ _   _ ____  _____ ____ _____ ___ ___  _   _
-   |_   _/ ___\ \   / /    |_ _| \ | / ___|| ____|  _ \_   _|_ _/ _ \| \ | |
-     | | \___ \\ \ / /      | ||  \| \___ \|  _| | |_) || |  | | | | |  \| |
-     | |  ___) |\ V /       | || |\  |___) | |___|  _ < | |  | | |_| | |\  |
-     |_| |____/  \_/       |___|_| \_|____/|_____|_| \_\|_| |___\___/|_| \_|*/
+      _____ ______     __     ___ _   _ ____  _____ ____ _____ ___ ___  _   _
+     |_   _/ ___\ \   / /    |_ _| \ | / ___|| ____|  _ \_   _|_ _/ _ \| \ | |
+       | | \___ \\ \ / /      | ||  \| \___ \|  _| | |_) || |  | | | | |  \| |
+       | |  ___) |\ V /       | || |\  |___) | |___|  _ < | |  | | |_| | |\  |
+       |_| |____/  \_/       |___|_| \_|____/|_____|_| \_\|_| |___\___/|_| \_|*/
 
   // variable expenses
   test('TSV POST: variable_expenses and receive inserts', (done) => {
     const textTsv = `description	category	store	cost	purchasing_date	is_planned	contains_indulgence	sensitivities
-  Softdrinks	Groceries	Edeka	€2.48	 28.04.2022	N	J	caffeine, aspartame/saccharin`;
+    Softdrinks	Groceries	Edeka	€2.48	 28.04.2022	N	J	caffeine, aspartame/saccharin`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/variable_expenses', textTsv, false);
   });
 
   test('POST TSV data: variable_expenses /w extra column and expect 400 Bad Request', (done) => {
     const textTsv = `description	category	store	cost	purchasing_date	is_planned	contains_indulgence	sensitivities	extra_column
-  Softdrinks	Groceries	Edeka	€2.48	 28.04.2022	N	J	caffeine, aspartame/saccharin`;
+    Softdrinks	Groceries	Edeka	€2.48	 28.04.2022	N	J	caffeine, aspartame/saccharin`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/variable_expenses', textTsv, true);
   });
 
@@ -680,13 +715,13 @@ describe('supertest REST API testing entire REST functionality', () => {
   // fixed costs
   test('POST TSV data: fixed_costs and receive inserts', (done) => {
     const textTsv = `category	description	monthly_interval	billed_cost	monthly_cost	effective_date	expiration_date
-    LIVING_ESSENTIALS 	Miete	1	360	360.00	01.06.2023	31.08.2023`;
+      LIVING_ESSENTIALS 	Miete	1	360	360.00	01.06.2023	31.08.2023`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/fixed_costs', textTsv, false);
   });
 
   test('POST TSV data: fixed_costs /w extra column and expect 400 Bad Request', (done) => {
     const textTsv = `category	description	monthly_interval	billed_cost	monthly_cost	effective_date	expiration_date	extra_column
-    LIVING_ESSENTIALS 	Miete	1	360	360.00	01.06.2023	31.08.2023`;
+      LIVING_ESSENTIALS 	Miete	1	360	360.00	01.06.2023	31.08.2023`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/fixed_costs', textTsv, true);
   });
 
@@ -697,13 +732,13 @@ describe('supertest REST API testing entire REST functionality', () => {
   // fixed income
   test('POST TSV data: fixed_income and receive inserts', (done) => {
     const textTsv = `description	type	monthly_interval	value	effective_date	expiration_date
-    Example Job Monthly Salary	net salary	1	3132.04	01.01.2024	01.01.4000`;
+      Example Job Monthly Salary	net salary	1	3132.04	01.01.2024	01.01.4000`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/fixed_income', textTsv, false);
   });
 
   test('POST TSV data: fixed_income /w extra column and expect 400 Bad Request', (done) => {
     const textTsv = `description	type	monthly_interval	value	effective_date	expiration_date	extra_column
-    Example Job Monthly Salary	net salary	1	3132.04	01.01.2024	01.01.4000`;
+      Example Job Monthly Salary	net salary	1	3132.04	01.01.2024	01.01.4000`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/fixed_income', textTsv, true);
   });
 
@@ -714,13 +749,13 @@ describe('supertest REST API testing entire REST functionality', () => {
   // new food items
   test('POST TSV data: new_food_items and receive inserts', (done) => {
     const textTsv = `food_item	brand	store	main_macro	kcal_amount	weight	price	last_update
-    Oatly Cuisine 15%	Oatly	Alle	Fat	150	250	1.29	 31.07.2023`;
+      Oatly Cuisine 15%	Oatly	Alle	Fat	150	250	1.29	 31.07.2023`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/new_food_items', textTsv, false);
   });
 
   test('POST TSV data: new_food_items /w extra column and expect 400 Bad Request', (done) => {
     const textTsv = `food_item	brand	store	main_macro	kcal_amount	weight	price	last_update	extra_column
-    Oatly Cuisine 15%	Oatly	Alle	Fat	150	250	1.29	 31.07.2023`;
+      Oatly Cuisine 15%	Oatly	Alle	Fat	150	250	1.29	 31.07.2023`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/new_food_items', textTsv, true);
   });
 
@@ -731,13 +766,13 @@ describe('supertest REST API testing entire REST functionality', () => {
   // investments
   test('POST TSV data: investments and receive inserts', (done) => {
     const textTsv = `execution_type	description	isin	investment_type	marketplace	units	price_per_unit	total_price	fees	execution_date	pct_of_profit_taxed	profit_amt
-    buy	CD PROJEKT S.A. C ZY 1	PLOPTTC00011	stock	Stuttgart	42	24.46	1043.11	15.79	22.01.2024		`;
+      buy	CD PROJEKT S.A. C ZY 1	PLOPTTC00011	stock	Stuttgart	42	24.46	1043.11	15.79	22.01.2024		`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/investments', textTsv, false);
   });
 
   test('POST TSV data: investments /w extra column and expect 400 Bad Request', (done) => {
     const textTsv = `execution_type	description	isin	investment_type	marketplace	units	price_per_unit	total_price	fees	execution_date	pct_of_profit_taxed	profit_amt	extra_column
-    buy	CD PROJEKT S.A. C ZY 1	PLOPTTC00011	stock	Stuttgart	42	24.46	1043.11	15.79	22.01.2024		`;
+      buy	CD PROJEKT S.A. C ZY 1	PLOPTTC00011	stock	Stuttgart	42	24.46	1043.11	15.79	22.01.2024		`;
     postTsvAndReceiveInsertStmt(done, '/texttsv/investments', textTsv, true);
   });
 
@@ -746,11 +781,11 @@ describe('supertest REST API testing entire REST functionality', () => {
   });
 
   /**
-    ____  ____      ____  _____ ____  ____ ___ ____ _____ ____
-   |  _ \| __ )    |  _ \| ____|  _ \/ ___|_ _/ ___|_   _/ ___|
-   | | | |  _ \    | |_) |  _| | |_) \___ \| |\___ \ | | \___ \
-   | |_| | |_) |   |  __/| |___|  _ < ___) | | ___) || |  ___) |
-   |____/|____/    |_|   |_____|_| \_\____/___|____/ |_| |____/*/
+      ____  ____      ____  _____ ____  ____ ___ ____ _____ ____
+     |  _ \| __ )    |  _ \| ____|  _ \/ ___|_ _/ ___|_   _/ ___|
+     | | | |  _ \    | |_) |  _| | |_) \___ \| |\___ \ | | \___ \
+     | |_| | |_) |   |  __/| |___|  _ < ___) | | ___) || |  ___) |
+     |____/|____/    |_|   |_____|_| \_\____/___|____/ |_| |____/*/
 
   test('DB_PERSIST POST user_settings: set dark mode for admin user expects 201 Created', (done) => {
     const userSettings: UserSettingObject = {

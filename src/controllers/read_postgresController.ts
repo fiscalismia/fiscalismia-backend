@@ -82,6 +82,7 @@ const databaseHealthCheck = asyncHandler(async (_request: Request, response: Res
   const client = await pool.connect();
   const result = await client.query(`
     SELECT
+      'OK' AS status,
       version() AS postgres_version,
       current_timestamp - pg_postmaster_start_time() AS up_time
   `);

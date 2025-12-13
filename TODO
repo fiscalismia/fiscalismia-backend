@@ -3,8 +3,6 @@
 ## Unfinished Tasks
 
 ### High Prio
-- Add Supertest for healthcheck /hc
-- Add Supertest for databaseHealthCheck /db_hc
 - Evaluate if ssl can be used for local development database setting ssl = true
 
 ### Medium Prio
