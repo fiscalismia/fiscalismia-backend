@@ -5,7 +5,7 @@
 # initialize global scope build args by supplying --build-arg flag in podman build
 ARG BACKEND_VERSION
 ARG ENVIRONMENT
-ARG CLOUD_DB=true
+ARG CLOUD_DB
 
 FROM node:20.12.2-alpine3.19 AS build
 WORKDIR /build-dir/
