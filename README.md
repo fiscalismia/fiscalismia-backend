@@ -279,6 +279,30 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       fiscalismia-backend:latest
    ```
 
+6. **Option 6: Deploy Demo Container on Hetzner Instance**
+
+```bash
+# INSECURE CONFIG WITH ROOT USER FOR ACCESSING SSL CERTS
+cd ~/git/fiscalismia-backend/
+export REMOTE_DIR="/usr/local/etc/fiscalismia-backend"
+ssh demo "mkdir -p $REMOTE_DIR/public"
+scp -r ./public demo:$REMOTE_DIR/public
+scp .env demo:$REMOTE_DIR/.env
+ssh demo << EOF
+cd $REMOTE_DIR
+podman stop fiscalismia-backend || true
+podman run \
+   --name fiscalismia-backend \
+   --env-file .env \
+   --rm \
+   --pull=always \
+   --net host \
+   -v $REMOTE_DIR/public:/fiscalismia-backend/public:z \
+   -v /etc/letsencrypt/live/demo.fiscalismia.com/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro,z \
+   -v /etc/letsencrypt/live/demo.fiscalismia.com/privkey.pem:/etc/nginx/certs/privkey.pem:ro,z \
+   -u 0:0 \
+   ghcr.io/fiscalismia/fiscalismia-backend-demo:latest
+EOF
    ------
 
 ## Testing
