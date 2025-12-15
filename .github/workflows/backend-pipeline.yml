@@ -176,6 +176,8 @@ jobs:
           BACKEND_VERSION=${{ env.BUILD_VERSION }}
           ENVIRONMENT=docker-development
           CLOUD_DB=false
+          NGINX_CONF=nginx.demo.conf
+          BACKEND_PORT=8443
         labels: |
           org.opencontainers.image.version=${{ env.BUILD_VERSION }}
           org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}
@@ -197,6 +199,8 @@ jobs:
           BACKEND_VERSION=${{ env.BUILD_VERSION }}
           ENVIRONMENT=production
           CLOUD_DB=true
+          NGINX_CONF=nginx.conf
+          BACKEND_PORT=443
         labels: |
           org.opencontainers.image.version=${{ env.BUILD_VERSION }}
           org.opencontainers.image.created=${{ env.BUILD_TIMESTAMP }}

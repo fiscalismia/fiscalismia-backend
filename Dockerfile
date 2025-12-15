@@ -6,6 +6,8 @@
 ARG BACKEND_VERSION
 ARG ENVIRONMENT
 ARG CLOUD_DB
+ARG NGINX_CONF
+ARG BACKEND_PORT
 
 FROM node:20.12.2-alpine3.19 AS build
 WORKDIR /build-dir/
@@ -35,6 +37,8 @@ COPY LICENSE ./
 ARG BACKEND_VERSION
 ARG ENVIRONMENT
 ARG CLOUD_DB
+ARG NGINX_CONF
+ARG BACKEND_PORT
 # init environment variables /w build arguments, then read in supervisord.conf
 ENV BACKEND_VERSION=$BACKEND_VERSION
 ENV ANSIBLE_BUILD_VERSION=$BACKEND_VERSION
@@ -57,7 +61,8 @@ RUN apk add --no-cache nginx supervisor
 RUN mkdir -p /run/nginx /var/log/supervisor /var/log/nginx
 
 # Copy nginx and Supervisor config
-COPY nginx.conf /etc/nginx/nginx.conf
+ARG NGINX_CONF
+COPY $NGINX_CONF /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Change Ownership of directories according to users
@@ -66,7 +71,8 @@ RUN chown -R nginx:nginx /run/nginx /var/log/nginx
 RUN chown -R nodejs:nodejs /fiscalismia-backend
 
 # Listen on HTTP/S Port
-EXPOSE 80
+ARG BACKEND_PORT
+EXPOSE $BACKEND_PORT
 
 # Start Supervisor to manage the Nginx and NodeJS unix processes 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
