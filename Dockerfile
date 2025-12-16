@@ -66,12 +66,12 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Change Ownership of directories according to users
 RUN chown -R root:root /var/log/supervisor
-RUN chown -R nginx:nginx /run/nginx /var/log/nginx
+RUN chown -R nginx:nginx /run/nginx /var/log/nginx /etc/nginx/certs/
 RUN chown -R nodejs:nodejs /fiscalismia-backend
 
 # Listen on HTTP/S Port
 ARG BACKEND_PORT
 EXPOSE $BACKEND_PORT
 
-# Start Supervisor to manage the Nginx and NodeJS unix processes 
+# Start Supervisor to manage the Nginx and NodeJS unix processes
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
