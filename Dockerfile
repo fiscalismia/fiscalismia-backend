@@ -25,8 +25,9 @@ RUN npm run build
 #    |    |  \ \__/ |__/ \__/ \__,  |  | \__/ | \|
 FROM node:20.12.2-alpine3.19
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+# add non priviledged system users to run their respective services
+RUN addgroup -g 101 -S nginx && adduser -S -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx nginx
+RUN addgroup -g 1001 -S nodejs && adduser -S -H -u 1001 -s /sbin/nologin -G nodejs nodejs
 
 # Set up Build Directory
 WORKDIR /fiscalismia-backend/
@@ -56,8 +57,8 @@ COPY database/pgsql-demo-dml.sql ./database/pgsql-demo-dml.sql
 # Install Nginx (which adds nginx user) and Supervisor
 RUN apk add --no-cache nginx supervisor
 
-# Create Logging and Process ID File Directories
-RUN mkdir -p /run/nginx /var/log/supervisor /var/log/nginx
+# Create nginx and supervisor Directories
+RUN mkdir -p /var/log/supervisor /etc/nginx/certs
 
 # Copy nginx and Supervisor config
 ARG NGINX_CONF
@@ -65,9 +66,8 @@ COPY $NGINX_CONF /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Change Ownership of directories according to users
-RUN mkdir -p /etc/nginx/certs
 RUN chown -R root:root /var/log/supervisor
-RUN chown -R nginx:nginx /run/nginx /var/log/nginx /etc/nginx/certs/
+RUN chown -R nginx:nginx /etc/nginx/certs/
 RUN chown -R nodejs:nodejs /fiscalismia-backend
 
 # Listen on HTTP/S Port
