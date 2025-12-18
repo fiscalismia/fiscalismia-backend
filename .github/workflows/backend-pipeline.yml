@@ -55,12 +55,12 @@ jobs:
     - name: Eslint Analysis
       run: npm run eslintAnalysis
 
-    # - name: Snyk Static Code Security Analysis
-    #   env:
-    #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-    #   run: |
-    #     snyk auth $SNYK_TOKEN
-    #     npm run snykCodeAnalysis
+    - name: Snyk Static Code Security Analysis
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        snyk auth $SNYK_TOKEN
+        npm run snykCodeAnalysis
 
     - name: Snyk Dependency Security Analysis
       run: npm run snykDependencyAnalysis
