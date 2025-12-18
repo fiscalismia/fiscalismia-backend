@@ -3,10 +3,10 @@
 ## Unfinished Tasks
 
 ### High Prio
-- Evaluate if ssl can be used for local development database setting ssl = true
+- check my node_env isnt working on demo container and where the env var is
+- Evaluate if ssl can be used for demo development database setting ssl = true
 
 ### Medium Prio
-- Integrate BACKEND_VERSION env var into health check and set default to "local-development"
 - Add POST Route for Variable Expenses Staging and think about how to trigger and evaluate ETL process
 - Add Supertest for evaluation of this post route and the ETL process
 

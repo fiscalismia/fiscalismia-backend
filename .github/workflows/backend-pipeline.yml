@@ -175,7 +175,7 @@ jobs:
           ./Dockerfile
         build-args: |
           BACKEND_VERSION=${{ env.BUILD_VERSION }}
-          ENVIRONMENT=docker-development
+          ENVIRONMENT=demo
           CLOUD_DB=false
           NGINX_CONF=nginx.demo.conf
           BACKEND_PORT=8443

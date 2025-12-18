@@ -69,6 +69,7 @@ const healthCheck = asyncHandler(async (_request: Request, response: Response) =
   const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(3);
   response.status(200).send({
     status: 'OK',
+    version: `${process.env.BACKEND_VERSION ? process.env.BACKEND_VERSION : 'local-development'}`,
     node_uptime_hours: nodeUptime,
     server_uptime_hours: serverUptime,
     hostname: hostname,
