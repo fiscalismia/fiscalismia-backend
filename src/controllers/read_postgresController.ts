@@ -119,7 +119,7 @@ const databaseHealthCheck = asyncHandler(async (_request: Request, response: Res
  */
 const boopResponse = asyncHandler(async (_request: Request, response: Response) => {
   logger.http('read_postgresController received GET to /api/fiscalismia/beep');
-  const highestHexValue = 4;
+  const highestHexValue = 3;
   const red1 = Math.floor(Math.random() * highestHexValue + 1);
   const red2 = Math.floor(Math.random() * highestHexValue + 1);
   const green1 = Math.floor(Math.random() * highestHexValue + 1);
@@ -162,10 +162,11 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
               text-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
             }
             .sub {
-              margin-top: 10px;
+              margin-top: 12px;
               display: block;
-              font-size: 1.4rem;
+              font-size: 2rem;
               letter-spacing: 0.1em;
+              text-shadow: 0 0 6px rgba(148, 163, 184, 0.35);
             }
           </style>
         </head>
