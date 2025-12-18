@@ -70,12 +70,12 @@ app.use(
       useDefaults: true,
       /* eslint-disable quotes */
       directives: {
-        // By default, allow loading resources from the same origin.
-        defaultSrc: ["'self'"],
-        // Allow scripts from the same origin and inline scripts.
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        // Allow styles from the same origin and inline styles.
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        // By default,deny loading resources
+        defaultSrc: ["'none'"],
+        // Allow no scripts
+        scriptSrc: ["'none'"],
+        // Allow no styles
+        styleSrc: ["'none'"],
         // Allow images from the same origin, data uris and the backend-server
         imgSrc: ["'self'", 'data:'],
         // Allow fonts from the same origin.
