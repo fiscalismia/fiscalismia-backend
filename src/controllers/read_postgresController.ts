@@ -128,13 +128,14 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
   const blue2 = 0;
   const backgroundColor = `#${red1}${red2}${green1}${green2}${blue1}${blue2}`;
   const quotes = [
-    'Smile! Life sucks, but at least you look cute',
+    'Smile! Life is hard, but at least you look cute',
     // eslint-disable-next-line quotes
     "Falling apart is just gravity's sense of humor",
     'Keep going… at least until the chocolate runs out',
     'We love the mooooooooooon 🌕',
     'Hup hup 🚆🚆',
-    'You are the bear!'
+    'You are the bear!',
+    'You will be a boat captain some day ⛵'
   ];
 
   response.status(200).type('html').send(`
@@ -163,7 +164,7 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
             .sub {
               margin-top: 10px;
               display: block;
-              font-size: 1.5rem;
+              font-size: 1.4rem;
               letter-spacing: 0.1em;
             }
           </style>
