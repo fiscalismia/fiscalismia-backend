@@ -55,25 +55,6 @@ jobs:
     - name: Eslint Analysis
       run: npm run eslintAnalysis
 
-    - name: Snyk Static Code Security Analysis
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        snyk auth $SNYK_TOKEN
-        npm run snykCodeAnalysis
-
-    - name: Snyk Dependency Security Analysis
-      run: npm run snykDependencyAnalysis
-
-    - name: Publish Typecheck & Eslint & Snyk Reports
-      uses: actions/upload-artifact@v5.0.0
-      # https://github.com/actions/upload-artifact
-      with:
-        name: Fiscalismia-Backend-Reports
-        path: |
-          reports/
-          !reports/.gitkeep
-
     - name: Initialize Database
       env:
         PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -137,6 +118,25 @@ jobs:
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_PORT: 5432
       run: npm test
+
+    - name: Snyk Static Code Security Analysis
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        snyk auth $SNYK_TOKEN
+        npm run snykCodeAnalysis
+
+    - name: Snyk Dependency Security Analysis
+      run: npm run snykDependencyAnalysis
+
+    - name: Publish Typecheck & Eslint & Snyk Reports
+      uses: actions/upload-artifact@v5.0.0
+      # https://github.com/actions/upload-artifact
+      with:
+        name: Fiscalismia-Backend-Reports
+        path: |
+          reports/
+          !reports/.gitkeep
 
   build-and-publish-image:
     runs-on: ubuntu-latest

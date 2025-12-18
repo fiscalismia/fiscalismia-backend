@@ -35,4 +35,4 @@ reports/snyk-dependency-analysis.txt
 database/reset-variable-expenses.sql
 
 # Image upload local only
-/public/
+/public/img/uploads/
