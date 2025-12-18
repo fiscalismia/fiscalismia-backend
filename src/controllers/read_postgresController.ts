@@ -34,9 +34,7 @@ const getRootUrlResponse = asyncHandler(async (_request: Request, response: Resp
     info: 'This is a REST API.',
     endpoint: '/api/fiscalismia/',
     health: '/api/fiscalismia/hc',
-    whatismyip: '/api/fiscalismia/ip',
-    create: '/api/fiscalismia/um/credentials',
-    login: '/api/fiscalismia/um/login'
+    whatismyip: '/api/fiscalismia/ip'
   });
 });
 
