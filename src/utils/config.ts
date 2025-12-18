@@ -1,19 +1,29 @@
 require('dotenv').config();
 
-const isNonProd = process.env.NODE_ENV !== 'production';
-const PUBLIC_DOMAIN = 'fiscalismia.com';
-const PUBLIC_DEMO_DOMAIN = 'demo.fiscalismia.com';
+const isProd = process.env.NODE_ENV === 'production';
+const isDemo = process.env.NODE_ENV === 'demo';
+const PUBLIC_FRONTEND_DOMAIN = 'fiscalismia.com';
+const PUBLIC_DEMO_FRONTEND_DOMAIN = 'demo.fiscalismia.com';
+const PUBLIC_BACKEND_DOMAIN = 'backend.fiscalismia.com';
+const PUBLIC_DEMO_BACKEND_DOMAIN = 'backend.demo.fiscalismia.com';
 // port is either defined in .env file, or overwritten as podman build argument
 // in production it is hardcoded to be https
-const BACKEND_PORT = isNonProd ? process.env.BACKEND_PORT : 443;
+const PROTOCOL = `${isProd ? 'https' : isDemo ? 'https' : 'http'}`;
+const DOMAIN = isProd
+  ? PUBLIC_BACKEND_DOMAIN
+  : isDemo
+    ? PUBLIC_DEMO_BACKEND_DOMAIN
+    : process.env.HOST_ADDRESS
+      ? process.env.HOST_ADDRESS
+      : 'localhost';
+const BACKEND_PORT = isDemo ? 8443 : isProd ? 443 : process.env.BACKEND_PORT;
 const API_ADDRESS = '/api/fiscalismia';
-const PROTOCOL = `${isNonProd ? 'http' : 'https'}`;
-const SERVER_ADDRESS = `${PROTOCOL}://${process.env.HOST_ADDRESS ? process.env.HOST_ADDRESS : 'localhost'}:${BACKEND_PORT}${API_ADDRESS}`;
-const ROOT_URL = `${PROTOCOL}://${process.env.HOST_ADDRESS}:${BACKEND_PORT}`;
+const SERVER_ADDRESS = `${PROTOCOL}://${DOMAIN}:${BACKEND_PORT}${API_ADDRESS}`;
+const ROOT_URL = `${PROTOCOL}://${DOMAIN}:${BACKEND_PORT}`;
 const RATE_LIMIT_MULTIPLICATOR = process.env.NODE_ENV === 'test' ? 1000 : 1; // GLOBAL MODIFIER INCREASING RATE LIMIT REQUESTS
 module.exports = {
-  PUBLIC_DOMAIN,
-  PUBLIC_DEMO_DOMAIN,
+  PUBLIC_FRONTEND_DOMAIN,
+  PUBLIC_DEMO_FRONTEND_DOMAIN,
   BACKEND_PORT,
   ROOT_URL,
   API_ADDRESS,

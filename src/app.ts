@@ -37,8 +37,8 @@ const allowedOrigins = [
   'http://localhost:4173', // local frontend development vite preview
   'http://localhost:443', // local frontend production testing
   'http://localhost:3002', // local backend (persisted images)
-  `https://${config.PUBLIC_DOMAIN}`,
-  `https://${config.PUBLIC_DEMO_DOMAIN}`
+  `https://${config.PUBLIC_FRONTEND_DOMAIN}`,
+  `https://${config.PUBLIC_DEMO_FRONTEND_DOMAIN}`
 ];
 
 const corsOptions = {

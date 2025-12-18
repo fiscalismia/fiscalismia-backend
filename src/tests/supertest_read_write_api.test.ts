@@ -9,7 +9,7 @@ const { pool } = require('../utils/pgDbService');
 |    /  \ /  `  /\  |       \  /  /\  |__) |  /\  |__) |    |__  /__`
 |___ \__/ \__, /~~\ |___     \/  /~~\ |  \ | /~~\ |__) |___ |___ .__/*/
 
-const ROOT_URL = '/api/fiscalismia';
+const API_ENDPOINT = '/api/fiscalismia';
 let authToken: string = '';
 const currentDate = new Date();
 const currentTime = currentDate.getHours() + ':' + currentDate.getMinutes() + 'and ' + currentDate.getSeconds() + 's';
@@ -36,7 +36,7 @@ describe('supertest REST API testing entire REST functionality', () => {
   //    |  | |___ /~~\ |___  |  |  |    \__, |  | |___ \__, |  \ .__/
   test('HEALTH CHECK backend connectivity', (done) => {
     request(app)
-      .get(`${ROOT_URL}/hc`)
+      .get(`${API_ENDPOINT}/hc`)
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err: unknown, res: request.Response) => {
@@ -52,7 +52,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('HEALTH CHECK database connectivity', (done) => {
     request(app)
-      .get(`${ROOT_URL}/db_hc`)
+      .get(`${API_ENDPOINT}/db_hc`)
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err: unknown, res: request.Response) => {
@@ -71,7 +71,7 @@ describe('supertest REST API testing entire REST functionality', () => {
   //    /~~\ \__/  |  |  |    |  \ |___ \__X \__/ |___ .__/  |  .__/
   test('AUTH read fiscalismia root w/o authentication fails', (done) => {
     request(app)
-      .get(ROOT_URL)
+      .get(API_ENDPOINT)
       .expect(401)
       .end((err: unknown, _res: request.Response) => {
         if (err instanceof Error) return done(err);
@@ -81,7 +81,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH login w/o pswd fails', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/login`)
+      .post(`${API_ENDPOINT}/um/login`)
       .send({
         username: username,
         email: 'herpderp@gmail.com'
@@ -96,7 +96,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH login with wrong pswd fails', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/login`)
+      .post(`${API_ENDPOINT}/um/login`)
       .send({
         username: username,
         password: 'kjlfaeijoawfe'
@@ -111,7 +111,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user with missing username returns 400 Bad Request', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: '',
         email: 'randomuser@randomdomain.com',
@@ -127,7 +127,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user with missing email returns 400 Bad Request', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'randomUser',
         password: 'testcredential'
@@ -142,7 +142,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user with missing password returns 400 Bad Request', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'randomUser',
         email: 'randomuser@randomdomain.com'
@@ -157,7 +157,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user /w invalid username returns 422 Unprocessable Content', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: '\\**+?!#',
         email: 'randomuser@randomdomain.com',
@@ -173,7 +173,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user /w invalid email returns 422 Unprocessable Content', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'randomUser',
         email: 'ʕ•ᴥ•ʔ@.com',
@@ -189,7 +189,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user /w invalid pswd returns 422 Unprocessable Content', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'randomUser',
         email: 'randomuser@randomdomain.com',
@@ -205,7 +205,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user /w username length above 32 returns 422 Unprocessable Content', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'randomUserrandomUserrandomUserrandomUserrandomUserserrandomUserrandomUserrandomUser',
         email: 'randomuser@randomdomain.com',
@@ -221,7 +221,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create user /w username containing any special characters except underscores returns 422 Unprocessable Content', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: 'random-user!',
         email: 'randomuser@randomdomain.com',
@@ -245,7 +245,7 @@ describe('supertest REST API testing entire REST functionality', () => {
         console.log(`User ${newDbUser} already exists. Skipping creation test.`);
       } else {
         await request(app)
-          .post(`${ROOT_URL}/um/credentials`)
+          .post(`${API_ENDPOINT}/um/credentials`)
           .send({
             username: newDbUser,
             email: 'hangrybear@maildomain.com',
@@ -264,7 +264,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH create duplicate user with valid input returns 409 CONFLICT ', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/credentials`)
+      .post(`${API_ENDPOINT}/um/credentials`)
       .send({
         username: newDbUser,
         email: 'hangrybear@maildomain.com',
@@ -280,7 +280,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('AUTH login /w correct credentials succeeds', (done) => {
     request(app)
-      .post(`${ROOT_URL}/um/login`)
+      .post(`${API_ENDPOINT}/um/login`)
       .send({
         username: username,
         password: password
@@ -344,7 +344,7 @@ describe('supertest REST API testing entire REST functionality', () => {
   //
   test('TEST_TABLE POST request', (done) => {
     request(app)
-      .post(`${ROOT_URL}`)
+      .post(`${API_ENDPOINT}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .send({
@@ -362,7 +362,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('TEST_TABLE GET request', (done) => {
     request(app)
-      .get(`${ROOT_URL}`)
+      .get(`${API_ENDPOINT}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -379,7 +379,7 @@ describe('supertest REST API testing entire REST functionality', () => {
   test('TEST_TABLE UPDATE request', (done) => {
     const updatedDescription = 'Updated from Supertest [supertest_read_write_api.test.ts] at [' + currentTime + ']';
     request(app)
-      .put(`${ROOT_URL}/${maxTestTableId}`)
+      .put(`${API_ENDPOINT}/${maxTestTableId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .send({
@@ -400,7 +400,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('TEST_TABLE DELETE request', (done) => {
     request(app)
-      .delete(`${ROOT_URL}/${insertedId}`)
+      .delete(`${API_ENDPOINT}/${insertedId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -496,7 +496,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       //   __        ___  __
       //  /  \ |  | |__  |__) \ /     /\  |    |
       //  \__X \__/ |___ |  \  |     /~~\ |___ |___
-      .get(`${ROOT_URL}/sensitivities_of_purchase`)
+      .get(`${API_ENDPOINT}/sensitivities_of_purchase`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -509,7 +509,7 @@ describe('supertest REST API testing entire REST functionality', () => {
           //   __        ___  __          __   __   ___  __     ___    __      ___      ___  __
           //  /  \ |  | |__  |__) \ /    /__` |__) |__  /  ` | |__  | /  `    |__  |\ |  |  |__) \ /
           //  \__X \__/ |___ |  \  |     .__/ |    |___ \__, | |    | \__,    |___ | \|  |  |  \  |
-          .get(`${ROOT_URL}/sensitivities_of_purchase/sensitivity/${randomId}`)
+          .get(`${API_ENDPOINT}/sensitivities_of_purchase/sensitivity/${randomId}`)
           .set('Authorization', 'Bearer ' + authToken)
           .expect('Content-Type', /json/)
           .expect(200)
@@ -532,7 +532,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       //   __        ___  __
       //  /  \ |  | |__  |__) \ /     /\  |    |
       //  \__X \__/ |___ |  \  |     /~~\ |___ |___
-      .get(`${ROOT_URL}/sensitivities_of_purchase`)
+      .get(`${API_ENDPOINT}/sensitivities_of_purchase`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -545,7 +545,7 @@ describe('supertest REST API testing entire REST functionality', () => {
           //   __        ___  __          __   __   ___  __     ___    __      ___      ___  __
           //  /  \ |  | |__  |__) \ /    /__` |__) |__  /  ` | |__  | /  `    |__  |\ |  |  |__) \ /
           //  \__X \__/ |___ |  \  |     .__/ |    |___ \__, | |    | \__,    |___ | \|  |  |  \  |
-          .get(`${ROOT_URL}/sensitivities_of_purchase/var_expense/${randomId}`)
+          .get(`${API_ENDPOINT}/sensitivities_of_purchase/var_expense/${randomId}`)
           .set('Authorization', 'Bearer ' + authToken)
           .expect('Content-Type', /json/)
           .expect(200)
@@ -567,7 +567,7 @@ describe('supertest REST API testing entire REST functionality', () => {
     const VAR_EXPENSE_CATEGORIES = ['Groceries', 'Leisure', 'Sale', 'Hygiene', 'Gift'];
     request(app)
       .get(
-        `${ROOT_URL}/variable_expenses/category/${VAR_EXPENSE_CATEGORIES[Math.floor(Math.random() * VAR_EXPENSE_CATEGORIES.length)]}`
+        `${API_ENDPOINT}/variable_expenses/category/${VAR_EXPENSE_CATEGORIES[Math.floor(Math.random() * VAR_EXPENSE_CATEGORIES.length)]}`
       )
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -585,7 +585,7 @@ describe('supertest REST API testing entire REST functionality', () => {
    */
   test('GET: fixed_income by effective_date', (done) => {
     request(app)
-      .get(`${ROOT_URL}/fixed_income/valid/${dbDateStr}`)
+      .get(`${API_ENDPOINT}/fixed_income/valid/${dbDateStr}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -602,7 +602,7 @@ describe('supertest REST API testing entire REST functionality', () => {
    */
   test('GET: fixed_costs by effective_date', (done) => {
     request(app)
-      .get(`${ROOT_URL}/fixed_costs/valid/${dbDateStr}`)
+      .get(`${API_ENDPOINT}/fixed_costs/valid/${dbDateStr}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -633,7 +633,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       settingValue: 'dark'
     };
     request(app)
-      .post(`${ROOT_URL}/um/settings`)
+      .post(`${API_ENDPOINT}/um/settings`)
       .send(userSettings)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -651,7 +651,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       settingValue: 'dark'
     };
     request(app)
-      .post(`${ROOT_URL}/um/settings`)
+      .post(`${API_ENDPOINT}/um/settings`)
       .send(userSettings)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -669,7 +669,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       settingValue: 'light'
     };
     request(app)
-      .post(`${ROOT_URL}/um/settings`)
+      .post(`${API_ENDPOINT}/um/settings`)
       .send(userSettings)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -794,7 +794,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       settingValue: 'dark'
     };
     request(app)
-      .post(`${ROOT_URL}/um/settings`)
+      .post(`${API_ENDPOINT}/um/settings`)
       .send(userSettings)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -819,7 +819,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       last_update: currentDate
     };
     request(app)
-      .post(`${ROOT_URL}/food_item`)
+      .post(`${API_ENDPOINT}/food_item`)
       .send(newFoodItem)
       .set('Authorization', 'Bearer ' + authToken)
       .set('Content-Type', 'application/json')
@@ -847,7 +847,7 @@ describe('supertest REST API testing entire REST functionality', () => {
     };
     request(app)
       // post valid item
-      .post(`${ROOT_URL}/food_item`)
+      .post(`${API_ENDPOINT}/food_item`)
       .send(newFoodItem)
       .set('Authorization', 'Bearer ' + authToken)
       .set('Content-Type', 'application/json')
@@ -860,7 +860,7 @@ describe('supertest REST API testing entire REST functionality', () => {
         insertedFoodItemDimensionKeys.push(Number(res.body.results[0].id));
         request(app)
           // post item again. expect to violate unique key constraint
-          .post(`${ROOT_URL}/food_item`)
+          .post(`${API_ENDPOINT}/food_item`)
           .send(newFoodItem)
           .set('Authorization', 'Bearer ' + authToken)
           .set('Content-Type', 'application/json')
@@ -891,7 +891,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       profit_amt: 0
     };
     request(app)
-      .post(`${ROOT_URL}/investments`)
+      .post(`${API_ENDPOINT}/investments`)
       .send(investmentAndTaxesObject)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -923,7 +923,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       profit_amt: 0
     };
     request(app)
-      .post(`${ROOT_URL}/investments`)
+      .post(`${API_ENDPOINT}/investments`)
       .send(investmentAndTaxesObject)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -952,7 +952,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       ]
     };
     request(app)
-      .post(`${ROOT_URL}/investment_dividends`)
+      .post(`${API_ENDPOINT}/investment_dividends`)
       .send(dividendsObject)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -981,7 +981,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       endDate: sevenDaysLater.toISOString()
     };
     request(app)
-      .post(`${ROOT_URL}/food_item_discount`)
+      .post(`${API_ENDPOINT}/food_item_discount`)
       .send(foodItemDiscountObj)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -1006,7 +1006,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       endDate: twelveDaysLater.toISOString()
     };
     request(app)
-      .post(`${ROOT_URL}/food_item_discount`)
+      .post(`${API_ENDPOINT}/food_item_discount`)
       .send(foodItemDiscountObj)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -1025,7 +1025,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       lastUpdate: currentDate
     };
     request(app)
-      .put(`${ROOT_URL}/food_item/price/${insertedFoodItemDimensionKeys[0]}`)
+      .put(`${API_ENDPOINT}/food_item/price/${insertedFoodItemDimensionKeys[0]}`)
       .send(updatedFoodPriceObj)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -1045,7 +1045,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('DB_PERSIST DELETE prior created food_item_discount expecting id returned', (done) => {
     request(app)
-      .delete(`${ROOT_URL}/food_item_discount/${insertedFoodItemDimensionKeys[0]}/${currentDate.toISOString()}`)
+      .delete(`${API_ENDPOINT}/food_item_discount/${insertedFoodItemDimensionKeys[0]}/${currentDate.toISOString()}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -1064,7 +1064,7 @@ describe('supertest REST API testing entire REST functionality', () => {
   test('DB_PERSIST DELETE prior created food_items from db expecting ids returned', () => {
     const deleteRequests = insertedFoodItemDimensionKeys.map((insertedDimensionKey: number) => {
       return request(app)
-        .delete(`${ROOT_URL}/food_item/${insertedDimensionKey}`)
+        .delete(`${API_ENDPOINT}/food_item/${insertedDimensionKey}`)
         .set('Authorization', 'Bearer ' + authToken)
         .expect('Content-Type', /json/)
         .expect(200)
@@ -1081,7 +1081,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('DB_PERSIST DELETE prior created dividend of investment, expecting id returned', (done) => {
     request(app)
-      .delete(`${ROOT_URL}/investment_dividend/${addedDividendId}`)
+      .delete(`${API_ENDPOINT}/investment_dividend/${addedDividendId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -1097,7 +1097,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('DB_PERSIST DELETE prior created BUY investment, expecting id returned', (done) => {
     request(app)
-      .delete(`${ROOT_URL}/investment/${purchasedInvestmentId}`)
+      .delete(`${API_ENDPOINT}/investment/${purchasedInvestmentId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -1113,7 +1113,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
   test('DB_PERSIST DELETE prior created SELL investment, expecting id returned', (done) => {
     request(app)
-      .delete(`${ROOT_URL}/investment/${soldInvestmentId}`)
+      .delete(`${API_ENDPOINT}/investment/${soldInvestmentId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -1140,7 +1140,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       last_update: currentDate
     };
     const newFoodItemResponse = await request(app)
-      .post(`${ROOT_URL}/food_item`)
+      .post(`${API_ENDPOINT}/food_item`)
       .send(newFoodItem)
       .set('Authorization', 'Bearer ' + authToken)
       .set('Content-Type', 'application/json')
@@ -1162,7 +1162,7 @@ describe('supertest REST API testing entire REST functionality', () => {
       endDate: fourDaysLater.toISOString()
     };
     const addDiscountResponse = await request(app)
-      .post(`${ROOT_URL}/food_item_discount`)
+      .post(`${API_ENDPOINT}/food_item_discount`)
       .send(foodItemDiscountObj)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
@@ -1172,7 +1172,7 @@ describe('supertest REST API testing entire REST functionality', () => {
     const insertedDiscountId: number = addDiscountResponse.body.results[0].id;
     // Check for Discount ID added to be present in v_food_price_overview
     const checkCurrentDiscountsAfterInsert = await request(app)
-      .get(`${ROOT_URL}/discounted_foods_current`)
+      .get(`${API_ENDPOINT}/discounted_foods_current`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200);
@@ -1183,7 +1183,7 @@ describe('supertest REST API testing entire REST functionality', () => {
 
     // DELETE NEW FOOD ITEM AND EXPECT DISCOUNT TO BE DELETED BY TRIGGER
     const deleteFoodItemResponse = await request(app)
-      .delete(`${ROOT_URL}/food_item/${insertedFoodItemId}`)
+      .delete(`${API_ENDPOINT}/food_item/${insertedFoodItemId}`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200);
@@ -1193,7 +1193,7 @@ describe('supertest REST API testing entire REST functionality', () => {
     expect(deletedId).toEqual(insertedFoodItemId);
     // Check for Discount ID of deleted food item to be absent in v_food_price_overview
     const checkCurrentDiscountsAfterDelete = await request(app)
-      .get(`${ROOT_URL}/discounted_foods_current`)
+      .get(`${API_ENDPOINT}/discounted_foods_current`)
       .set('Authorization', 'Bearer ' + authToken)
       .expect('Content-Type', /json/)
       .expect(200);
@@ -1217,7 +1217,7 @@ function postTsvAndReceiveInsertStmt(
   expectError: boolean
 ) {
   request(app)
-    .post(`${ROOT_URL}${relativePath}`)
+    .post(`${API_ENDPOINT}${relativePath}`)
     .send(exampleTsv)
     .set('Authorization', 'Bearer ' + authToken)
     .set('Content-Type', 'text/plain')
@@ -1253,7 +1253,7 @@ function getRequestByRandomIdMatches(
     //   __        ___  __
     //  /  \ |  | |__  |__) \ /     /\  |    |
     //  \__X \__/ |___ |  \  |     /~~\ |___ |___
-    .get(`${ROOT_URL}${relativePathAll}`)
+    .get(`${API_ENDPOINT}${relativePathAll}`)
     .set('Authorization', 'Bearer ' + authToken)
     .expect('Content-Type', /json/)
     .expect(200)
@@ -1266,7 +1266,7 @@ function getRequestByRandomIdMatches(
         //   __        ___  __          __   __   ___  __     ___    __      ___      ___  __
         //  /  \ |  | |__  |__) \ /    /__` |__) |__  /  ` | |__  | /  `    |__  |\ |  |  |__) \ /
         //  \__X \__/ |___ |  \  |     .__/ |    |___ \__, | |    | \__,    |___ | \|  |  |  \  |
-        .get(`${ROOT_URL}${relativePathSpecific ? relativePathSpecific : relativePathAll}/${randomId}`)
+        .get(`${API_ENDPOINT}${relativePathSpecific ? relativePathSpecific : relativePathAll}/${randomId}`)
         .set('Authorization', 'Bearer ' + authToken)
         .expect('Content-Type', /json/)
         .expect(200)
@@ -1292,7 +1292,7 @@ function getRequestByRandomIdMatches(
  */
 function getRequestReturnsResult(done: jest.DoneCallback, relativePath: string) {
   request(app)
-    .get(`${ROOT_URL}${relativePath}`)
+    .get(`${API_ENDPOINT}${relativePath}`)
     .set('Authorization', 'Bearer ' + authToken)
     .expect('Content-Type', /json/)
     .expect(200)
