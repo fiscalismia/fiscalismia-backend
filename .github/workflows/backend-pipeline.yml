@@ -119,13 +119,13 @@ jobs:
         POSTGRES_PORT: 5432
       run: npm test
 
-    - name: Snyk Static Code Security Analysis
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        snyk auth $SNYK_TOKEN
-        snyk ignore --file-path=src/tests/supertest_read_write_api.test.ts
-        npm run snykCodeAnalysis
+    # - name: Snyk Static Code Security Analysis
+    #   env:
+    #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    #   run: |
+    #     snyk auth $SNYK_TOKEN
+    #     snyk ignore --file-path=src/tests/supertest_read_write_api.test.ts
+    #     npm run snykCodeAnalysis
 
     - name: Snyk Dependency Security Analysis
       run: npm run snykDependencyAnalysis

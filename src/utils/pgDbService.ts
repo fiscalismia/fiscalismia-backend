@@ -29,7 +29,8 @@ types.setTypeParser(1700, function (val: string) {
 /**
  * 1) When running the build in production, a cloud postgres instance is required to run on process.env.DB_CONNECTION_URL
  * 2) when running development on localhost or when running supertest tests from the console the postgres docker db can be reached via localhost
- * 3) when running development from within a docker container, the host cannot be localhost, as a bridge network in docker does not expose the localhost to individual containers
+ * 3) when running development or the demo from within a docker container, the host cannot be localhost,
+ *    as a bridge network in docker does not expose the localhost to individual containers
  *    For this purpose, the internal docker network resolves other docker containers via DNS by their container-name.
  *    This name is defined in the docker-compose file for the postgres service and derived from process.env.POSTGRES_HOST
  */
