@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const favicon = require('serve-favicon');
+const path = require('path');
 
 // Routes
 const unauthenticatedRoutes = require('./routes/unauthenticatedRoutes');
@@ -19,6 +21,8 @@ const { addUserSchemaToSearchPath } = require('./middleware/userSchemaInit');
 const { genericFallbackRateLimiter, authenticatedRateLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
+
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 // hit /api/fiscalismia/ip endpoint to find out of the ip address of the X-Forwarded-For header matches the actual ip address or that of a reverse proxy or load balancer
 app.set('trust proxy', 0);
