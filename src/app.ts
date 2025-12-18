@@ -78,8 +78,8 @@ app.use(
         defaultSrc: ["'none'"],
         // Allow no scripts
         scriptSrc: ["'none'"],
-        // Allow no styles
-        styleSrc: ["'none'"],
+        // Allow inline styles to serve the easter egg beep endpoint
+        styleSrc: isProd ? ["'none'"] : ["'self'", "'unsafe-inline'"],
         // Allow images from the same origin, data uris and the backend-server
         imgSrc: ["'self'", 'data:'],
         // Allow fonts from the same origin.

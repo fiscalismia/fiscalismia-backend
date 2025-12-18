@@ -1,7 +1,12 @@
 const unauthenticatedRoutes = require('express').Router();
 const { loginWithUserCredentials } = require('../controllers/create_postgresController');
 const { createUserCredentialsAndSchema } = require('../controllers/create_postgresUserSchema');
-const { getIpAddress, healthCheck, databaseHealthCheck } = require('../controllers/read_postgresController');
+const {
+  getIpAddress,
+  healthCheck,
+  databaseHealthCheck,
+  boopResponse
+} = require('../controllers/read_postgresController');
 const { getFoodItemImg } = require('../controllers/multerController');
 const {
   unauthenticatedRateLimiter,
@@ -18,6 +23,7 @@ unauthenticatedRoutes.post('/um/login', unauthenticatedRateLimiter, loginWithUse
 unauthenticatedRoutes.post('/um/credentials', unauthenticatedRateLimiter, createUserCredentialsAndSchema);
 unauthenticatedRoutes.get('/ip', getIpAddress);
 unauthenticatedRoutes.get('/hc', healthCheck);
+unauthenticatedRoutes.get('/beep', boopResponse);
 unauthenticatedRoutes.get('/db_hc', databaseHealthCheckRateLimiter, databaseHealthCheck);
 
 /**

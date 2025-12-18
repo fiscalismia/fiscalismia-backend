@@ -28,6 +28,12 @@ const getTestData = asyncHandler(async (_request: Request, response: Response) =
   client.release();
 });
 
+/**
+ * @description root url returns some basic information about the application
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /
+ */
 const getRootUrlResponse = asyncHandler(async (_request: Request, response: Response) => {
   logger.http('read_postgresController received GET to root url /');
   response.status(200).json({
@@ -51,7 +57,7 @@ const getIpAddress = asyncHandler(async (request: Request, response: Response) =
 });
 
 /**
- * @description sends back status 200 OK on health check
+ * @description sends back status 200 and server information on health check
  * @method HTTP GET
  * @async asyncHandler passes exceptions within routes to errorHandler middleware
  * @route /api/fiscalismia/hc
@@ -83,7 +89,7 @@ const healthCheck = asyncHandler(async (_request: Request, response: Response) =
 });
 
 /**
- * @description sends back status 200 OK on health check
+ * @description sends back status 200 and database info extraced from postgres on db health check
  * @method HTTP GET
  * @async asyncHandler passes exceptions within routes to errorHandler middleware
  * @route /api/fiscalismia/db_hc
@@ -103,6 +109,45 @@ const databaseHealthCheck = asyncHandler(async (_request: Request, response: Res
     response.status(503).send({ status: 'Service Unavailable' });
   }
   client.release();
+});
+
+/**
+ * @description sends boop back on beep
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/beep
+ */
+const boopResponse = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('read_postgresController received GET to /api/fiscalismia/beep');
+  response.status(200).type('html').send(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>beep → boop</title>
+          <style>
+            body {
+              margin: 0;
+              height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: #0f172a;
+              color: #e5e7eb;
+              font-family: Consolas, "Roboto Mono", Roboto, monospace;
+            }
+            .boop {
+              font-size: 6rem;
+              letter-spacing: 0.2em;
+              text-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+            }
+          </style>
+        </head>
+        <body>
+          <div class="boop">🦫 boop 🐻</div>
+        </body>
+      </html>
+    `);
 });
 
 /**
@@ -542,6 +587,7 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
 module.exports = {
   getTestData,
   getRootUrlResponse,
+  boopResponse,
   getIpAddress,
   healthCheck,
   databaseHealthCheck,
