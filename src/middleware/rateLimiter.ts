@@ -32,7 +32,7 @@ const unauthenticatedRateLimiter = rateLimit({
 const rootUrlRateLimiter = rateLimit({
   ...standardOptions,
   max: 30 * config.RATE_LIMIT_MULTIPLICATOR,
-  message: 'Too many login or account creation attempts. Please try again in 15 minutes.'
+  message: 'Pleae refrain from hitting my root url repeatedly. You can try again in 15 minutes.'
 });
 
 /**
