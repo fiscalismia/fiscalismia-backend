@@ -65,13 +65,13 @@ ARG NGINX_CONF
 COPY $NGINX_CONF /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# copy favicon to serve in browser via serve-favicon middleware
+COPY ./public/favicon.ico /fiscalismia-backend/public/favicon.ico
+
 # Change Ownership of directories according to users
 RUN chown -R root:root /var/log/supervisor
 RUN chown -R nginx:nginx /var/log/nginx /etc/nginx/certs/
 RUN chown -R nodejs:nodejs /fiscalismia-backend
-
-# copy favicon to serve in browser via serve-favicon middleware
-COPY ./public/favicon.ico /fiscalismia-backend/public/favicon.ico
 
 # Listen on HTTP/S Port
 ARG BACKEND_PORT
