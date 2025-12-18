@@ -58,7 +58,7 @@ COPY database/pgsql-demo-dml.sql ./database/pgsql-demo-dml.sql
 RUN apk add --no-cache nginx supervisor
 
 # Create nginx and supervisor Directories
-RUN mkdir -p /var/log/supervisor /etc/nginx/certs
+RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs
 
 # Copy nginx and Supervisor config
 ARG NGINX_CONF
@@ -67,8 +67,12 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Change Ownership of directories according to users
 RUN chown -R root:root /var/log/supervisor
-RUN chown -R nginx:nginx /etc/nginx/certs/
+RUN chown -R nginx:nginx /var/log/nginx /etc/nginx/certs/
 RUN chown -R nodejs:nodejs /fiscalismia-backend
+
+# Create symlinks for nginx logs so supervisord log config applies and writes to docker logs
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Listen on HTTP/S Port
 ARG BACKEND_PORT
