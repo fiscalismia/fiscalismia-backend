@@ -38,7 +38,10 @@ const pool =
   process.env.CLOUD_DB !== 'true' // docker dev & test db
     ? new Pool({
         user: process.env.POSTGRES_USER,
-        host: process.env.NODE_ENV === 'docker-development' ? process.env.POSTGRES_HOST : 'localhost',
+        host:
+          process.env.NODE_ENV === 'docker-development' || process.env.NODE_ENV === 'demo'
+            ? process.env.POSTGRES_HOST
+            : 'localhost',
         database: process.env.POSTGRES_DB,
         password: process.env.POSTGRES_PASSWORD,
         port: process.env.POSTGRES_PORT,
