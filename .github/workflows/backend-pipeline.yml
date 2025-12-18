@@ -111,7 +111,7 @@ jobs:
       env:
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         POSTGRES_USER: fiscalismia_api
-        # this .env variable is only required to db container dns name in docker-development
+        # this .env variable is only required for container dns name in docker-development and demo
         # otherwise defaults to localhost in src\utils\pgDbService.ts
         #POSTGRES_HOST: localhost
         POSTGRES_DB: fiscalismia

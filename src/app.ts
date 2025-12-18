@@ -23,7 +23,7 @@ const { genericFallbackRateLimiter, authenticatedRateLimiter } = require('./midd
 
 const app = express();
 
-const isNonProd = process.env.NODE_ENV !== 'production';
+const isProd = process.env.NODE_ENV === 'production';
 const isDemo = process.env.NODE_ENV === 'demo';
 
 // serve favicon mounted into oci container
@@ -48,8 +48,8 @@ const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (origin && allowedOrigins.includes(origin)) {
       callback(null, true); // Enforce allowlist and deny others
-    } else if (!origin && isNonProd) {
-      callback(null, true); // Allow no-origin for development and supertest
+    } else if (!origin && !isProd && !isDemo) {
+      callback(null, true); // Allow no-origin for development and supertest only
     } else {
       callback(new Error(`Origin ${origin} not allowed by CORS. Must be in allowedOrigins in backend.`));
     }
