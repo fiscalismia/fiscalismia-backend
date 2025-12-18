@@ -29,6 +29,15 @@ const unauthenticatedRateLimiter = rateLimit({
 /**
  * @description Limits spamming the root url
  */
+const databaseHealthCheckRateLimiter = rateLimit({
+  ...standardOptions,
+  max: 15 * config.RATE_LIMIT_MULTIPLICATOR,
+  message: 'Too many requests against the database health check. Please try again in 15 minutes.'
+});
+
+/**
+ * @description Limits spamming the root url
+ */
 const rootUrlRateLimiter = rateLimit({
   ...standardOptions,
   max: 30 * config.RATE_LIMIT_MULTIPLICATOR,
@@ -75,6 +84,7 @@ const authenticatedRateLimiter = rateLimit({
 
 module.exports = {
   rootUrlRateLimiter,
+  databaseHealthCheckRateLimiter,
   unauthenticatedRateLimiter,
   imageRetrievalRateLimiter,
   genericFallbackRateLimiter,

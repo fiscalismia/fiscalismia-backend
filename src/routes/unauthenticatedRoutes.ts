@@ -3,7 +3,11 @@ const { loginWithUserCredentials } = require('../controllers/create_postgresCont
 const { createUserCredentialsAndSchema } = require('../controllers/create_postgresUserSchema');
 const { getIpAddress, healthCheck, databaseHealthCheck } = require('../controllers/read_postgresController');
 const { getFoodItemImg } = require('../controllers/multerController');
-const { unauthenticatedRateLimiter, imageRetrievalRateLimiter } = require('../middleware/rateLimiter');
+const {
+  unauthenticatedRateLimiter,
+  imageRetrievalRateLimiter,
+  databaseHealthCheckRateLimiter
+} = require('../middleware/rateLimiter');
 
 /**
  * Contains the only routes served to non-authenticated users.
@@ -14,7 +18,7 @@ unauthenticatedRoutes.post('/um/login', unauthenticatedRateLimiter, loginWithUse
 unauthenticatedRoutes.post('/um/credentials', unauthenticatedRateLimiter, createUserCredentialsAndSchema);
 unauthenticatedRoutes.get('/ip', getIpAddress);
 unauthenticatedRoutes.get('/hc', healthCheck);
-unauthenticatedRoutes.get('/db_hc', databaseHealthCheck);
+unauthenticatedRoutes.get('/db_hc', databaseHealthCheckRateLimiter, databaseHealthCheck);
 
 /**
  * The Image is queried not via axios but via an url in the src location within the html page
