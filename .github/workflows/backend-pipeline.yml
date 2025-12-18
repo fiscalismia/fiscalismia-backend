@@ -124,7 +124,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
         snyk auth $SNYK_TOKEN
-        snyk ignore --file-path=${GITHUB_WORKSPACE}/src/tests/supertest_read_write_api.test.ts
+        snyk ignore --file-path=src/tests/supertest_read_write_api.test.ts
         npm run snykCodeAnalysis
 
     - name: Snyk Dependency Security Analysis
