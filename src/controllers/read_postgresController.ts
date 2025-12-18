@@ -119,6 +119,24 @@ const databaseHealthCheck = asyncHandler(async (_request: Request, response: Res
  */
 const boopResponse = asyncHandler(async (_request: Request, response: Response) => {
   logger.http('read_postgresController received GET to /api/fiscalismia/beep');
+  const highestHexValue = 4;
+  const red1 = Math.floor(Math.random() * highestHexValue + 1);
+  const red2 = Math.floor(Math.random() * highestHexValue + 1);
+  const green1 = Math.floor(Math.random() * highestHexValue + 1);
+  const green2 = Math.floor(Math.random() * highestHexValue + 1);
+  const blue1 = 0;
+  const blue2 = 0;
+  const backgroundColor = `#${red1}${red2}${green1}${green2}${blue1}${blue2}`;
+  const quotes = [
+    'Smile! Life sucks, but at least you look cute',
+    // eslint-disable-next-line quotes
+    "Falling apart is just gravity's sense of humor",
+    'Keep going… at least until the chocolate runs out',
+    'We love the mooooooooooon 🌕',
+    'Hup hup 🚆🚆',
+    'You are the bear!'
+  ];
+
   response.status(200).type('html').send(`
       <!DOCTYPE html>
       <html lang="en">
@@ -130,9 +148,10 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
               margin: 0;
               height: 100vh;
               display: flex;
+              flex-direction: column;
               align-items: center;
               justify-content: center;
-              background: #0f172a;
+              background: ${backgroundColor};
               color: #e5e7eb;
               font-family: Consolas, "Roboto Mono", Roboto, monospace;
             }
@@ -141,10 +160,17 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
               letter-spacing: 0.2em;
               text-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
             }
+            .sub {
+              margin-top: 10px;
+              display: block;
+              font-size: 1.5rem;
+              letter-spacing: 0.1em;
+            }
           </style>
         </head>
         <body>
           <div class="boop">🦫 boop 🐻</div>
+          <div class="sub">${quotes[Math.floor(Math.random() * quotes.length)]}</div>
         </body>
       </html>
     `);
