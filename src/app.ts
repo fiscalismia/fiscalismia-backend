@@ -48,9 +48,10 @@ const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (origin && allowedOrigins.includes(origin)) {
       callback(null, true); // Enforce allowlist and deny others
-    } else if (!origin && !isProd && !isDemo) {
-      callback(null, true); // Allow no-origin for development and supertest only
+    } else if (!origin) {
+      callback(null, true); // Allow no-origin for e.g. browser navigation - user access in the browser does not include origins
     } else {
+      // any malicious javascript, fetches, XHR, machine-initiated requests include origins - as enforced by browsers
       callback(new Error(`Origin ${origin} not allowed by CORS. Must be in allowedOrigins in backend.`));
     }
   },
