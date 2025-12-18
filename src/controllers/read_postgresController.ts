@@ -137,6 +137,8 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
     'You are the bear!',
     'You will be a boat captain some day ⛵'
   ];
+  // animal emojis :3
+  // https://www.w3schools.com/charsets/ref_emoji_animals.asp
 
   response.status(200).type('html').send(`
       <!DOCTYPE html>
@@ -163,6 +165,8 @@ const boopResponse = asyncHandler(async (_request: Request, response: Response) 
             }
             .sub {
               margin-top: 12px;
+              padding-left: 15px;
+              padding-right:10px;
               display: block;
               font-size: 2rem;
               letter-spacing: 0.1em;
