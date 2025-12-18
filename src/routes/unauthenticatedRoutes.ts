@@ -3,7 +3,7 @@ const { loginWithUserCredentials } = require('../controllers/create_postgresCont
 const { createUserCredentialsAndSchema } = require('../controllers/create_postgresUserSchema');
 const { getIpAddress, healthCheck, databaseHealthCheck } = require('../controllers/read_postgresController');
 const { getFoodItemImg } = require('../controllers/multerController');
-const { unauthenticatedRateLimiter, imageRetrievalRateLimiter } = require('../middleware/rateLimiter'); // 👈 Import limiters
+const { unauthenticatedRateLimiter, imageRetrievalRateLimiter } = require('../middleware/rateLimiter');
 
 /**
  * Contains the only routes served to non-authenticated users.

@@ -8,6 +8,7 @@ const favicon = require('serve-favicon');
 const path = require('path');
 
 // Routes
+const rootUrlRoute = require('./routes/rootUrlRoute');
 const unauthenticatedRoutes = require('./routes/unauthenticatedRoutes');
 const publicSchemaRouter = require('./routes/publicSchemaRoutes');
 const userSchemaRouter = require('./routes/userSchemaRoutes');
@@ -125,6 +126,7 @@ app.use(bodyParser.json({ limit: '4194304' }));
 /**
  * Add Express Router Endpoints for REST API Access
  */
+app.use(rootUrlRoute);
 app.use(config.API_ADDRESS, unauthenticatedRoutes);
 app.use(config.API_ADDRESS, authenticatedRateLimiter, authenticateUser, publicSchemaRouter);
 app.use(config.API_ADDRESS, authenticatedRateLimiter, authenticateUser, addUserSchemaToSearchPath, userSchemaRouter);

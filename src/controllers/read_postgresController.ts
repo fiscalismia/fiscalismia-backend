@@ -28,6 +28,15 @@ const getTestData = asyncHandler(async (_request: Request, response: Response) =
   client.release();
 });
 
+const getRootUrlResponse = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('read_postgresController received GET to root url /');
+  response.status(200).json({
+    info: 'This is a REST API.',
+    endpoint: '/api/fiscalismia/',
+    health: '/api/fiscalismia/hc'
+  });
+});
+
 /**
  * @description query to retrieve ip address behind proxies to help debug the correct value for
  * app.set('trust proxy', 1) in the server configuration for express-rate-limit
@@ -530,6 +539,7 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
 
 module.exports = {
   getTestData,
+  getRootUrlResponse,
   getIpAddress,
   healthCheck,
   databaseHealthCheck,

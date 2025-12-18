@@ -6,6 +6,7 @@
 - Evaluate if ssl can be used for local development database setting ssl = true
 
 ### Medium Prio
+- check HTTP Security Headers and verify against best practices by running "curl -I https://backend.demo.fiscalismia.com"
 - Integrate BACKEND_VERSION env var into health check and set default to "local-development"
 - Add POST Route for Variable Expenses Staging and think about how to trigger and evaluate ETL process
 - Add Supertest for evaluation of this post route and the ETL process

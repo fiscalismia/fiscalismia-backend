@@ -27,6 +27,15 @@ const unauthenticatedRateLimiter = rateLimit({
 });
 
 /**
+ * @description Limits spamming the root url
+ */
+const rootUrlRateLimiter = rateLimit({
+  ...standardOptions,
+  max: 30 * config.RATE_LIMIT_MULTIPLICATOR,
+  message: 'Too many login or account creation attempts. Please try again in 15 minutes.'
+});
+
+/**
  * @description Global fallback that is triggered if no specific rate limiter is applied.
  */
 const genericFallbackRateLimiter = rateLimit({
@@ -65,6 +74,7 @@ const authenticatedRateLimiter = rateLimit({
 });
 
 module.exports = {
+  rootUrlRateLimiter,
   unauthenticatedRateLimiter,
   imageRetrievalRateLimiter,
   genericFallbackRateLimiter,
