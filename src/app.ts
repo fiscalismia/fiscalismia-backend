@@ -66,6 +66,7 @@ app.use(
   helmet({
     // Set 'Content-Security-Policy' to a custom value.
     contentSecurityPolicy: {
+      useDefaults: true,
       /* eslint-disable quotes */
       directives: {
         // By default, allow loading resources from the same origin.
