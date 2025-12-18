@@ -16,7 +16,7 @@ const DOMAIN = isProd
     : process.env.HOST_ADDRESS
       ? process.env.HOST_ADDRESS
       : 'localhost';
-const BACKEND_PORT = isDemo ? 8443 : isProd ? 443 : process.env.BACKEND_PORT;
+const BACKEND_PORT = isDemo ? 443 : isProd ? 443 : process.env.BACKEND_PORT;
 const API_ADDRESS = '/api/fiscalismia';
 const SERVER_ADDRESS = `${PROTOCOL}://${DOMAIN}:${BACKEND_PORT}${API_ADDRESS}`;
 const ROOT_URL = `${PROTOCOL}://${DOMAIN}:${BACKEND_PORT}`;
