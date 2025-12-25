@@ -61,7 +61,7 @@ RUN apk add --no-cache nginx supervisor
 RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs
 
 # TEMPORARY PSQL FOR DEBUGGING
-RUN apk add --no-cache postgresql16-client
+# RUN apk add --no-cache postgresql16-client
 
 # Copy nginx and Supervisor config
 ARG NGINX_CONF
