@@ -60,6 +60,9 @@ RUN apk add --no-cache nginx supervisor
 # Create nginx and supervisor Directories
 RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs
 
+# TEMPORARY PSQL FOR DEBUGGING
+RUN apk add postgresql17 postgresql17-contrib postgresql17-openrc
+
 # Copy nginx and Supervisor config
 ARG NGINX_CONF
 COPY $NGINX_CONF /etc/nginx/nginx.conf
