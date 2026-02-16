@@ -35,8 +35,9 @@ const {
 
   postInvestmentAndTaxes,
   postDividendsAndTaxes,
-  postInvestmentsTextTsv,
 
+  postRawDataEtlInvocation,
+  postInvestmentsTextTsv,
   postVariableExpensesTextTsv,
   postFixedCostsTextTsv,
   postIncomeTextTsv
@@ -91,6 +92,9 @@ userSchemaRoutes.get('/sensitivities_of_purchase/var_expense/:id', getSensitivit
 //   __   __   ___      ___  ___
 //  /  ` |__) |__   /\   |  |__
 //  \__, |  \ |___ /~~\  |  |___
+
+userSchemaRoutes.post('/admin/raw_data_etl', postRawDataEtlInvocation);
+
 userSchemaRoutes.post('/texttsv/variable_expenses', postVariableExpensesTextTsv);
 userSchemaRoutes.post('/texttsv/fixed_costs', postFixedCostsTextTsv);
 userSchemaRoutes.post('/texttsv/fixed_income', postIncomeTextTsv);

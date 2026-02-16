@@ -7,7 +7,9 @@
 - Evaluate if ssl can be used for demo development database setting ssl = true
 
 ### Medium Prio
-- Add POST Route for Variable Expenses Staging and think about how to trigger and evaluate ETL process
+- Limit access to Admin Panel Menu to jwt-session token content via backend check
+- Rethink localbrowser storage evaluation, especially in regards to loginUserName, to prohibit forgery
+- Add POST Route for Variable Expenses Staging
 - Add Supertest for evaluation of this post route and the ETL process
 
 ### Low Prio

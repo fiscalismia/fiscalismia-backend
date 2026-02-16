@@ -374,6 +374,33 @@ const postDividendsAndTaxes = asyncHandler(async (request: Request, response: Re
     client.release();
   }
 });
+/**   ___ _________  ________ _   _    ___  ______ _____  ___
+ *   / _ \|  _  \  \/  |_   _| \ | |  / _ \ | ___ \  ___|/ _ \
+ *  / /_\ \ | | | .  . | | | |  \| | / /_\ \| |_/ / |__ / /_\ \
+ *  |  _  | | | | |\/| | | | | . ` | |  _  ||    /|  __||  _  |
+ *  | | | | |/ /| |  | |_| |_| |\  | | | | || |\ \| |___| | | |
+ *  \_| |_/___/ \_|  |_/\___/\_| \_/ \_| |_/\_| \_\____/\_| |_/
+ */
+/**
+ * @description Triggers automated serverless RAW ETL process, hitting AWS API Gateway Route,
+ * which then Invokes Raw_Data_ETL Lambda function, pulling google sheet document, which is then
+ * transformed to distinct TSV files for PSQL Statement generation by the backend's own routes.
+ * @method HTTP POST
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/admin/raw_data_etl
+ */
+const postRawDataEtlInvocation = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('create_postgresController received POST to /api/fiscalismia/admin/raw_data_etl');
+  try {
+    response.status(200).send('OK');
+  } catch (error: unknown) {
+    response.status(400);
+    if (error instanceof Error) {
+      error.message = `The provided text/plain data could not be converted into INSERT Statements. ${error.message}`;
+    }
+    throw error;
+  }
+});
 
 /** _____ _____  _   _      _____ _   _  _____ ___________ _____ _____
  * |_   _/  ___|| | | |    |_   _| \ | |/  ___|  ___| ___ \_   _/  ___|
@@ -770,6 +797,7 @@ module.exports = {
   postVariableExpensesTextTsv,
   postFixedCostsTextTsv,
   postIncomeTextTsv,
+  postRawDataEtlInvocation,
 
   loginWithUserCredentials,
   postUpdatedUserSettings
