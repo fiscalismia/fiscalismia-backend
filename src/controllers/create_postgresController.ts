@@ -8,6 +8,8 @@ import {
 } from '../utils/customTypes';
 import { Request, Response } from 'express';
 import { usernameRegExp } from '../utils/sharedFunctions';
+import axios from 'axios';
+
 const {
   replaceCommaAndParseFloat,
   extractResultHeaders,
@@ -15,6 +17,7 @@ const {
   parseHeader
 } = require('../utils/sharedFunctions');
 
+const config = require('../utils/config');
 const asyncHandler = require('express-async-handler');
 const { parse } = require('csv-parse/sync');
 const logger = require('../utils/logger');
@@ -392,8 +395,25 @@ const postDividendsAndTaxes = asyncHandler(async (request: Request, response: Re
 const postRawDataEtlInvocation = asyncHandler(async (_request: Request, response: Response) => {
   logger.http('create_postgresController received POST to /api/fiscalismia/admin/raw_data_etl');
   try {
-    response.status(200).send('OK');
+    if (!process.env.API_GW_SECRET_KEY) {
+      response.status(500).json({ error: 'Missing Secret Key for API Gateway' });
+    }
+    console.log('HELLO');
+    const apiResponse = await axios.post(
+      `${config.AWS_API_GATEWAY_ENDPOINT}/api/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.API_GW_SECRET_KEY
+        },
+        timeout: 30000
+      }
+    );
+    console.log('HELLO TOO');
+    logger.debug(JSON.stringify(apiResponse));
+    response.status(202).send('API Gateway invoked successfully');
   } catch (error: unknown) {
+    console.log(error);
     response.status(400);
     if (error instanceof Error) {
       error.message = `The provided text/plain data could not be converted into INSERT Statements. ${error.message}`;
