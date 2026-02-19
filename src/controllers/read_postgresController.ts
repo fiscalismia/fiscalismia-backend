@@ -1,8 +1,11 @@
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
 const os = require('os');
+import axios, { AxiosError } from 'axios';
 import { Request, Response } from 'express';
+const config = require('../utils/config');
 const { pool } = require('../utils/pgDbService');
+const { getLocalTimestamp } = require('../utils/sharedFunctions');
 
 /***
  *     _____  _____ _____    ______ _____ _____ _   _ _____ _____ _____ _____
@@ -615,6 +618,109 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
   response.status(200).send(results);
   client.release();
 });
+/**   ___ _________  ________ _   _    ___  ______ _____  ___
+ *   / _ \|  _  \  \/  |_   _| \ | |  / _ \ | ___ \  ___|/ _ \
+ *  / /_\ \ | | | .  . | | | |  \| | / /_\ \| |_/ / |__ / /_\ \
+ *  |  _  | | | | |\/| | | | | . ` | |  _  ||    /|  __||  _  |
+ *  | | | | |/ /| |  | |_| |_| |\  | | | | || |\ \| |___| | | |
+ *  \_| |_/___/ \_|  |_/\___/\_| \_/ \_| |_/\_| \_\____/\_| |_/
+ */
+/**
+ * @description Triggers automated serverless RAW ETL process, hitting AWS API Gateway Route with POST,
+ * which then Invokes Raw_Data_ETL Lambda function, pulling google sheet document, which is then
+ * transformed to distinct TSV files uploaded to S3 and sent to backend as presigned urls,
+ * the backend then uses this TSV data for PSQL Statement generation in the backend's own routes.
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/admin/raw_data_etl
+ */
+const getRawDataEtlInvocation = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('create_postgresController received GET to /api/fiscalismia/admin/raw_data_etl');
+  try {
+    if (!process.env.API_GW_SECRET_KEY) {
+      response.status(500).json({ error: 'Missing Secret Key for API Gateway' });
+    }
+    const requestEndpoint = `${config.AWS_API_GATEWAY_ENDPOINT}/api/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`;
+    const requestBody = undefined;
+    const requestConfig = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: process.env.API_GW_SECRET_KEY
+      },
+      timeout: 30000
+    };
+    logger.debug(`Invoking ${requestEndpoint} to start ETL...`);
+    const gatewayResponse = await axios.post(requestEndpoint, requestBody, requestConfig);
+    if (gatewayResponse?.status == 202 && gatewayResponse.data) {
+      // downloading TSV files from s3 via pre-signed urls
+      const sse_headers = {
+        'Content-Type': 'text/event-stream',
+        Connection: 'keep-alive',
+        'Cache-Control': 'no-cache'
+      };
+      response.set(sse_headers);
+      response.flushHeaders(); // to establish connection with client
+      let data;
+      let message;
+      if (gatewayResponse.data.presigned_urls && gatewayResponse.data.presigned_urls.length > 0) {
+        message = `${getLocalTimestamp()}: \nAPI Gateway invoked successfully. \nDownloading TSV files from S3...`;
+        data = `data: ${JSON.stringify({ message: message })}\n\n`;
+        logger.debug(message);
+        response.write(data);
+        const s3Response = await axios.get(gatewayResponse.data.presigned_urls[0], {
+          timeout: config.S3_PRESIGNED_URL_TIMEOUT
+        });
+        if (s3Response.data && s3Response.data.length > 0) {
+          message = `${getLocalTimestamp()}: TSV payload retrieved successfully from S3.`;
+          data = `data: ${JSON.stringify({ message: message })}\n\n`;
+          logger.debug(message);
+          response.write(data);
+        } else {
+          response.status(400);
+          throw new Error('TSV download from S3 presigned_url failed');
+        }
+      } else {
+        response.status(400);
+        throw new Error('API Gateway response does not include s3 presigned_urls.');
+      }
+      /**
+       * CLAUDE INSTRUCTIONS HERE: on successful invocation I expect an array of s3 presigned urls to be returned containing a link to a TSV file between 10-500 kilobytes.
+       * I want to start an asynchronous background process that downloads this file into the backend express server's memory, or if more suitable temporary file.
+       * The TSV payload should then be sent to the backend express server api on http://localhost:3002 to the route /api/fiscalismia/texttsv/fixed_costs and the tsv content should be sent in the body. .
+       * {
+        "presigned_urls": [
+          "https://fiscalismia-raw-data-etl-storage.s3.amazonaws.com/transformed/2026-02-19_19-57-01-fixed_costs.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQFC27LPN3R7BUIAI%2F20260219%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20260219T185709Z&X-Amz-Expires=300&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjELv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGV1LWNlbnRyYWwtMSJIMEYCIQDfT9tqmtovF%2BKUJddxRJRaNuq%2B9FVB3jzsoMvCn9mmCQIhALC5Roxwy5Ngar3gClvit5NiRbAzAXGlH2HIbiw4pnzsKowDCIT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDEwOTI4MjE3MDUxIgxP33%2BIISr3s%2FiUxgoq4AKoLIMkWLPARCkIyFSMQC%2F5wkyIemaEKZUt1cWQWXC6OVnoELj7OqbwqXnLQBe%2FJ8fAguqrNpKUFHfDi9fXleI1qxyz4LZGzK%2FO1mSm17h2nAy4NOfRh4jv%2BWxGE0T3XGii%2BntIav1VAC1DavIMDPuNzQuPkjE8n83EkQEmRZ%2FGxBwiZym7vgcaei1t67vbKKZ4pecKkx2qpiynCjWMoB9Jiz8WRahLVIXXM6cWAuvWeY6QimKw2PQIUiXdM7BdZ9xgFX0721LExdYeChXUeRH6A0rz4p8CP%2Beyxhn%2BcO7USzQ9aw0Y%2B4EGQIi6pzUh1r%2BBqqwI28wOCRwj9w%2BShUHoJ3yoSvDJ7pJWXQ1kdOEGUcGAvHnJvBmUav12Wop7n%2FZptf5889GZGNlMtDmdRxNNGFjIcGEmTL%2FfDlNIIPTv3QokAbmnZ437uXmXav23nJu%2FjuUCBHgBNbxmiVgwFcszMPu53cwGOp0B%2FTrs%2Fvy34fb03YuH6r07fEJaUZURJ4%2BLGLHyYCUhhwf33tpC3NnlKrXrJvyLgAQ%2BxtS%2F7k7F2ueDb0X1bY83t1KrCHtatyWiQTwOk6QvDQdod7V1Ma2gyqPzKTb%2FhhaDNgDCAlZMEXOp03pZDj7KX5LopNHHoH%2FO3KpYp6zbEmaa78IxXxnwKBkMVtuYTBAHY5%2BoZBFRXz1N3X%2BN4w%3D%3D&X-Amz-Signature=4685c342859fe6101e911bfc5cbcce41cf800828563aa61868bfcec5a4708dd4",
+        ]
+      }
+      */
+      console.log(gatewayResponse.data);
+    } else {
+      response.status(400).json({
+        message:
+          'API Gateway invocation did not return expected data. Check Log Group /aws/lambda/Fiscalismia_RawDataETL'
+      });
+    }
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const data = error.response?.data;
+      const message = error.response?.data?.message ?? error.message;
+
+      logger.error(`AxiosError [${status}]: ${JSON.stringify(data)}`);
+      response.status(status ?? 502).json({
+        error: 'Lambda invocation failed',
+        status: status,
+        message: message,
+        detail: data
+      });
+    }
+    response.status(500);
+    if (error instanceof Error) {
+      error.message = `API Gateway invocation failed. ${error.message}`;
+    }
+    throw error;
+  }
+});
 
 module.exports = {
   getTestData,
@@ -623,6 +729,8 @@ module.exports = {
   getIpAddress,
   healthCheck,
   databaseHealthCheck,
+
+  getRawDataEtlInvocation,
 
   getUserSpecificSettings,
 

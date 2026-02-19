@@ -6,6 +6,7 @@ const PUBLIC_FRONTEND_DOMAIN = 'fiscalismia.com';
 const PUBLIC_DEMO_FRONTEND_DOMAIN = 'demo.fiscalismia.com';
 const PUBLIC_BACKEND_DOMAIN = 'backend.fiscalismia.com';
 const PUBLIC_DEMO_BACKEND_DOMAIN = 'backend.demo.fiscalismia.com';
+const S3_PRESIGNED_URL_TIMEOUT = 5000; // milliseconds
 const AWS_API_GATEWAY_ENDPOINT = 'https://4c9puhe7j8.execute-api.eu-central-1.amazonaws.com';
 // port is either defined in .env file, or overwritten as podman build argument
 // in production it is hardcoded to be https
@@ -30,5 +31,6 @@ module.exports = {
   API_ADDRESS,
   SERVER_ADDRESS,
   RATE_LIMIT_MULTIPLICATOR,
-  AWS_API_GATEWAY_ENDPOINT
+  AWS_API_GATEWAY_ENDPOINT,
+  S3_PRESIGNED_URL_TIMEOUT
 };

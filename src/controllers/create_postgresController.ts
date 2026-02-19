@@ -8,7 +8,6 @@ import {
 } from '../utils/customTypes';
 import { Request, Response } from 'express';
 import { usernameRegExp } from '../utils/sharedFunctions';
-import axios from 'axios';
 
 const {
   replaceCommaAndParseFloat,
@@ -17,7 +16,6 @@ const {
   parseHeader
 } = require('../utils/sharedFunctions');
 
-const config = require('../utils/config');
 const asyncHandler = require('express-async-handler');
 const { parse } = require('csv-parse/sync');
 const logger = require('../utils/logger');
@@ -375,50 +373,6 @@ const postDividendsAndTaxes = asyncHandler(async (request: Request, response: Re
     throw error;
   } finally {
     client.release();
-  }
-});
-/**   ___ _________  ________ _   _    ___  ______ _____  ___
- *   / _ \|  _  \  \/  |_   _| \ | |  / _ \ | ___ \  ___|/ _ \
- *  / /_\ \ | | | .  . | | | |  \| | / /_\ \| |_/ / |__ / /_\ \
- *  |  _  | | | | |\/| | | | | . ` | |  _  ||    /|  __||  _  |
- *  | | | | |/ /| |  | |_| |_| |\  | | | | || |\ \| |___| | | |
- *  \_| |_/___/ \_|  |_/\___/\_| \_/ \_| |_/\_| \_\____/\_| |_/
- */
-/**
- * @description Triggers automated serverless RAW ETL process, hitting AWS API Gateway Route,
- * which then Invokes Raw_Data_ETL Lambda function, pulling google sheet document, which is then
- * transformed to distinct TSV files for PSQL Statement generation by the backend's own routes.
- * @method HTTP POST
- * @async asyncHandler passes exceptions within routes to errorHandler middleware
- * @route /api/fiscalismia/admin/raw_data_etl
- */
-const postRawDataEtlInvocation = asyncHandler(async (_request: Request, response: Response) => {
-  logger.http('create_postgresController received POST to /api/fiscalismia/admin/raw_data_etl');
-  try {
-    if (!process.env.API_GW_SECRET_KEY) {
-      response.status(500).json({ error: 'Missing Secret Key for API Gateway' });
-    }
-    console.log('HELLO');
-    const apiResponse = await axios.post(
-      `${config.AWS_API_GATEWAY_ENDPOINT}/api/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: process.env.API_GW_SECRET_KEY
-        },
-        timeout: 30000
-      }
-    );
-    console.log('HELLO TOO');
-    logger.debug(JSON.stringify(apiResponse));
-    response.status(202).send('API Gateway invoked successfully');
-  } catch (error: unknown) {
-    console.log(error);
-    response.status(400);
-    if (error instanceof Error) {
-      error.message = `The provided text/plain data could not be converted into INSERT Statements. ${error.message}`;
-    }
-    throw error;
   }
 });
 
@@ -817,7 +771,6 @@ module.exports = {
   postVariableExpensesTextTsv,
   postFixedCostsTextTsv,
   postIncomeTextTsv,
-  postRawDataEtlInvocation,
 
   loginWithUserCredentials,
   postUpdatedUserSettings

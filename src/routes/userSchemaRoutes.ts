@@ -2,6 +2,8 @@ const userSchemaRoutes = require('express').Router();
 const {
   getTestData,
 
+  getRawDataEtlInvocation,
+
   getAllCategories,
   getAllStores,
   getAllSensisitivies,
@@ -36,7 +38,6 @@ const {
   postInvestmentAndTaxes,
   postDividendsAndTaxes,
 
-  postRawDataEtlInvocation,
   postInvestmentsTextTsv,
   postVariableExpensesTextTsv,
   postFixedCostsTextTsv,
@@ -63,6 +64,8 @@ userSchemaRoutes.delete('/:id', deleteTestData);
 //  |__) |__   /\  |  \
 //  |  \ |___ /~~\ |__/
 
+// adminArea
+userSchemaRoutes.get('/admin/raw_data_etl', getRawDataEtlInvocation);
 // getAll
 userSchemaRoutes.get('/category', getAllCategories);
 userSchemaRoutes.get('/store', getAllStores);
@@ -92,8 +95,6 @@ userSchemaRoutes.get('/sensitivities_of_purchase/var_expense/:id', getSensitivit
 //   __   __   ___      ___  ___
 //  /  ` |__) |__   /\   |  |__
 //  \__, |  \ |___ /~~\  |  |___
-
-userSchemaRoutes.post('/admin/raw_data_etl', postRawDataEtlInvocation);
 
 userSchemaRoutes.post('/texttsv/variable_expenses', postVariableExpensesTextTsv);
 userSchemaRoutes.post('/texttsv/fixed_costs', postFixedCostsTextTsv);
