@@ -691,6 +691,8 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
             );
             sendSSEdata(`Querying ${route} for PSQL...`, 'info', response);
             if (localTsvResponse?.status == 200 && localTsvResponse?.data?.length != 0) {
+              const insertStatementOverview = localTsvResponse.data.split('INSERT INTO')[0].substring(2);
+              sendSSEdata(insertStatementOverview, 'magenta', response);
               tsvRouteData[match] = localTsvResponse.data;
             } else {
               response.status(400);
@@ -751,7 +753,11 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
  * @param level 'info|success'
  * @param response
  */
-function sendSSEdata(message: any, level: 'info' | 'success', response: Response<any, Record<string, any>>) {
+function sendSSEdata(
+  message: any,
+  level: 'info' | 'success' | 'magenta',
+  response: Response<any, Record<string, any>>
+) {
   const msg = `${getLocalTimestamp()}: ${message}`;
   const data = `data: ${JSON.stringify({ message: msg, level: level })}\n\n`;
   logger.debug(message);
