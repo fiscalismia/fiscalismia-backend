@@ -666,12 +666,12 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
       headers: { Authorization: `${request.headers['authorization']}`, 'Content-Type': 'text/plain' }
     };
     /** ### AWS API GATEWAY POST REQUEST TRIGGERING ETL ### */
-    sendSSEdata('Querying AWS API Gateway invoking ETL process...', response);
+    sendSSEdata('Querying AWS API Gateway invoking ETL process...', 'info', response);
     const gatewayResponse = await axios.post(gatewayEndpoint, gatewayRequestBody, gatewayConfig);
     if (gatewayResponse?.status == 202 && gatewayResponse.data) {
-      sendSSEdata('API Gateway invoked successfully.', response);
+      sendSSEdata('API Gateway invoked successfully.', 'success', response);
       if (gatewayResponse.data.presigned_urls && gatewayResponse.data.presigned_urls.length > 0) {
-        sendSSEdata('Downloading TSV files from S3...', response);
+        sendSSEdata('Downloading TSV files from S3...', 'info', response);
         const presigned_urls = gatewayResponse.data.presigned_urls;
         for (const url of presigned_urls) {
           /** ### AWS S3 PRE-SIGNED URL DOWNLOAD OF TSV FILES ### */
@@ -680,7 +680,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
             const Bytes = Buffer.byteLength(s3Response.data, 'utf-8');
             const match = Object.keys(tsvRouteMap).find((name) => url.includes(name)) as TsvFilenames['filenames'];
             const route = match ? tsvRouteMap[match] : null;
-            sendSSEdata(`Retrieved ${Bytes} bytes ${match}.tsv file from S3.`, response);
+            sendSSEdata(`Retrieved ${Bytes} bytes ${match}.tsv file from S3.`, 'info', response);
             logger.debug(`Matched s3 TSV with filename ${match}.tsv to route ${route}`);
 
             /** ### LOCAL EXPRESS API INVOCATION TRANSFORMING TSV TO PSQL ### */
@@ -689,7 +689,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
               s3Response.data,
               localTsvConfig
             );
-            sendSSEdata(`Querying ${route} for PSQL...`, response);
+            sendSSEdata(`Querying ${route} for PSQL...`, 'info', response);
             if (localTsvResponse?.status == 200 && localTsvResponse?.data?.length != 0) {
               tsvRouteData[match] = localTsvResponse.data;
             } else {
@@ -711,7 +711,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
           'API Gateway invocation did not return expected data. Check Log Group /aws/lambda/Fiscalismia_RawDataETL'
       });
     }
-    sendSSEdata('ETL process completed successfully.', response);
+    sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
     // TODO
     // response.write(`data: ${JSON.stringify({ result: tsvRouteData['variable_expenses'] })}\n\n`); // THIS FAILS, OVER 3000 INSERT STATEMENTS
     response.write(`data: ${JSON.stringify({ result: tsvRouteData['income'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
@@ -748,11 +748,12 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
 /**
  * Send Server Sent Events to Frontend EventSource
  * @param message
+ * @param level 'info|success'
  * @param response
  */
-function sendSSEdata(message: any, response: Response<any, Record<string, any>>) {
+function sendSSEdata(message: any, level: 'info' | 'success', response: Response<any, Record<string, any>>) {
   const msg = `${getLocalTimestamp()}: ${message}`;
-  const data = `data: ${JSON.stringify({ message: msg })}\n\n`;
+  const data = `data: ${JSON.stringify({ message: msg, level: level })}\n\n`;
   logger.debug(message);
   response.write(data);
 }
