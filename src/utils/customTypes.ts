@@ -96,6 +96,33 @@ export type FixedIncome = {
 };
 
 /**
+ * The Lambda code defines the following filenames in the file
+ * functions/python/Fiscalismia_RawDataETL/extract_transform.py
+    "variable_expenses", "fixed_costs", "investments", "income", "food_items"
+ */
+export type TsvFilenames = {
+  filenames: 'variable_expenses' | 'fixed_costs' | 'investments' | 'income' | 'food_items';
+};
+
+export type TsvRouteMap = Record<TsvFilenames['filenames'], string>;
+export type TsvRouteData = Record<TsvFilenames['filenames'], string>;
+
+export const tsvRouteMap: TsvRouteMap = {
+  variable_expenses: '/api/fiscalismia/texttsv/variable_expenses',
+  fixed_costs: '/api/fiscalismia/texttsv/fixed_costs',
+  investments: '/api/fiscalismia/texttsv/investments',
+  income: '/api/fiscalismia/texttsv/fixed_income',
+  food_items: '/api/fiscalismia/texttsv/new_food_items'
+};
+
+export const tsvRouteData: TsvRouteMap = {
+  variable_expenses: '',
+  fixed_costs: '',
+  investments: '',
+  income: '',
+  food_items: ''
+};
+/**
  * Bought investments are stored in investments table, if the execution type is sell, tax information is added for investment_taxes table.
  * @description For DB INSERTION via TSV bulk Inserts rather than manual Entry from the frontend
  * @see https://github.com/hangrybear666/fiscalismia-frontend/blob/main/src/types/custom/customTypes.ts
