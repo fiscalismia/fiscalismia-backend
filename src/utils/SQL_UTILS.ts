@@ -477,6 +477,58 @@ WHERE food_prices_dimension_key = $1
   AND discount_start_date = $2
 RETURNING food_prices_dimension_key as id`;
 
+/**   ___ _________  ________ _   _    ___  ______ _____  ___
+ *   / _ \|  _  \  \/  |_   _| \ | |  / _ \ | ___ \  ___|/ _ \
+ *  / /_\ \ | | | .  . | | | |  \| | / /_\ \| |_/ / |__ / /_\ \
+ *  |  _  | | | | |\/| | | | | . ` | |  _  ||    /|  __||  _  |
+ *  | | | | |/ /| |  | |_| |_| |\  | | | | || |\ \| |___| | | |
+ *  \_| |_/___/ \_|  |_/\___/\_| \_/ \_| |_/\_| \_\____/\_| |_/
+ */
+
+/**
+ * Deletes all data from all tables in the userSchema,
+ * essentially resetting the content of the database for the user.
+ * @returns Rowcount of deletion operation aggregated per table_name
+ */
+const truncateUserSchemaTables = `
+WITH
+  d0 AS (DELETE FROM test_table RETURNING 1),
+  d1 AS (DELETE FROM staging_variable_bills RETURNING 1),
+  d2 AS (DELETE FROM fixed_costs RETURNING 1),
+  d3 AS (DELETE FROM fixed_income RETURNING 1),
+  d4 AS (DELETE FROM bridge_var_exp_sensitivity RETURNING 1),
+  d5 AS (DELETE FROM variable_expenses RETURNING 1),
+  d6 AS (DELETE FROM category RETURNING 1),
+  d7 AS (DELETE FROM store RETURNING 1),
+  d8 AS (DELETE FROM sensitivity RETURNING 1),
+
+  f1 AS (DELETE FROM food_price_discounts RETURNING 1),
+  f2 AS (DELETE FROM food_price_image_location RETURNING 1),
+  f3 AS (DELETE FROM table_food_prices RETURNING 1),
+
+  i1 AS (DELETE FROM bridge_investment_dividends RETURNING 1),
+  i2 AS (DELETE FROM investment_taxes RETURNING 1),
+  i3 AS (DELETE FROM investment_dividends RETURNING 1),
+  i4 AS (DELETE FROM investments RETURNING 1)
+SELECT
+  (SELECT COUNT(*) FROM d0) AS test_table,
+  (SELECT COUNT(*) FROM d1) AS staging_variable_bills,
+  (SELECT COUNT(*) FROM d2) AS fixed_costs,
+  (SELECT COUNT(*) FROM d3) AS fixed_income,
+  (SELECT COUNT(*) FROM d4) AS bridge_var_exp_sensitivity,
+  (SELECT COUNT(*) FROM d5) AS variable_expenses,
+  (SELECT COUNT(*) FROM d6) AS category,
+  (SELECT COUNT(*) FROM d7) AS store,
+  (SELECT COUNT(*) FROM d8) AS sensitivity,
+
+  (SELECT COUNT(*) FROM f1) AS food_price_discounts,
+  (SELECT COUNT(*) FROM f2) AS food_price_image_location,
+  (SELECT COUNT(*) FROM f3) AS table_food_prices,
+
+  (SELECT COUNT(*) FROM i1) AS bridge_investment_dividends,
+  (SELECT COUNT(*) FROM i2) AS investment_taxes,
+  (SELECT COUNT(*) FROM i3) AS investment_dividends,
+  (SELECT COUNT(*) FROM i1) AS investments`;
 module.exports = {
   buildInsertStagingVariableBills,
   buildInsertFixedCosts,
@@ -503,5 +555,6 @@ module.exports = {
   deleteInvestmentById,
   deleteInvestmentTaxById,
   deleteDividendFromBridgeById,
-  deleteDividendById
+  deleteDividendById,
+  truncateUserSchemaTables
 };

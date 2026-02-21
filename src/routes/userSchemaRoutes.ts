@@ -45,6 +45,8 @@ const {
 } = require('../controllers/create_postgresController');
 const { updateTestData, updateFoodItemPrice } = require('../controllers/update_postgresController');
 const {
+  truncateAllUserSchemaTables,
+
   deleteTestData,
   deleteFoodItem,
   deleteFoodItemDiscount,
@@ -66,6 +68,7 @@ userSchemaRoutes.delete('/:id', deleteTestData);
 
 // adminArea
 userSchemaRoutes.get('/admin/raw_data_etl', getRawDataEtlInvocation);
+
 // getAll
 userSchemaRoutes.get('/category', getAllCategories);
 userSchemaRoutes.get('/store', getAllStores);
@@ -115,6 +118,9 @@ userSchemaRoutes.put('/food_item/price/:id', updateFoodItemPrice);
 //   __   ___       ___ ___  ___
 //  |  \ |__  |    |__   |  |__
 //  |__/ |___ |___ |___  |  |___
+
+// adminArea
+userSchemaRoutes.delete('/admin/user_schema/truncate_all', truncateAllUserSchemaTables);
 
 userSchemaRoutes.delete('/food_item/:dimension_key', deleteFoodItem);
 userSchemaRoutes.delete('/investment/:id', deleteInvestment);

@@ -1,7 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
+const jwt = require('jsonwebtoken');
 import { Request, Response } from 'express';
 import { PostgresError } from '../utils/customTypes';
+const { getLocalTimestamp } = require('../utils/sharedFunctions');
 const {
   deleteFoodItemById,
   deleteFoodItemDiscountByIdAndStartDate,
@@ -9,8 +11,10 @@ const {
   deleteInvestmentById,
   deleteInvestmentTaxById,
   deleteDividendFromBridgeById,
-  deleteDividendById
+  deleteDividendById,
+  truncateUserSchemaTables
 } = require('../utils/SQL_UTILS');
+
 const { pool } = require('../utils/pgDbService');
 
 /***
@@ -254,8 +258,79 @@ const deleteInvestmentDividend = asyncHandler(async (request: Request, response:
   }
 });
 
+/**
+ * @description DELETE request to TRUNCATE the entire user schema table content,
+ * essentially clearing the database and executing a reset for the user's data
+ * @method HTTP DELETE
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /admin/user_schema/truncate_all
+ */
+const truncateAllUserSchemaTables = asyncHandler(async (request: Request, response: Response) => {
+  logger.http('delete_postgresController received DELETE to /admin/user_schema/truncate_all');
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    // Verify we are deleting tables in the correct userschema
+    if (request.headers.authorization && request.headers.authorization.startsWith('Bearer')) {
+      const token = request.headers.authorization.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      const userSchema = decodedToken?.user?.userSchema;
+      const searchPathQuery = await client.query('SHOW search_path');
+      const searchPathResult = searchPathQuery ? searchPathQuery.rows : null;
+      if (
+        searchPathResult &&
+        searchPathResult.length > 0 &&
+        searchPathResult[0].search_path &&
+        searchPathResult[0].search_path.includes(userSchema)
+      ) {
+        logger.debug('search_path is set correctly. Proceeding with truncate operation');
+      } else {
+        throw new Error(`search_path is not set to ${userSchema}`);
+      }
+    } else {
+      throw new Error('Bearer token could not be extracted to verify userSchema.');
+    }
+    const independentDeletion = await client.query(truncateUserSchemaTables);
+    const independentDeletionResult = independentDeletion ? independentDeletion.rows : null;
+    if (independentDeletionResult && independentDeletionResult.length > 0) {
+      logger.debug('DELETION ROW COUNT: ' + JSON.stringify(independentDeletionResult[0]));
+      response.status(200).json({ timestamp: getLocalTimestamp(), ...independentDeletionResult[0] });
+    } else {
+      throw new Error('DELETION of user schema tables did not succeed.');
+    }
+    await client.query('ROLLBACK');
+    // response.status(200).send(results);
+    // return result;
+  } catch (error: unknown) {
+    await client.query('ROLLBACK');
+    // Type guard to check if it's a PostgresError with the FK code
+    const isFkViolation = (e: any): e is PostgresError => {
+      return e && e.code === '23503';
+    };
+
+    if (isFkViolation(error)) {
+      const errorMsg = `FK violation: ${error.detail}.`;
+      logger.warn(errorMsg);
+      response.status(409).json({
+        errorMsg: errorMsg
+      });
+    } else {
+      response.status(500);
+    }
+    if (error instanceof Error) {
+      error.message = `Transaction ROLLBACK. Row could not be deleted from investments. ${error.message}`;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = {
   deleteTestData,
+
+  truncateAllUserSchemaTables,
+
   deleteFoodItem,
   deleteFoodItemDiscount,
   deleteInvestment,
