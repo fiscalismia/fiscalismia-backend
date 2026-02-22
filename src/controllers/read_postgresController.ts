@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
 const os = require('os');
-import { TsvFilenames, tsvRouteData, tsvRouteMap } from '../utils/customTypes';
+import { PostgresError, TsvFilenames, tsvRouteData, tsvRouteMap, TsvTableInsertData } from '../utils/customTypes';
 import axios, { AxiosError } from 'axios';
 import { Request, Response } from 'express';
 const config = require('../utils/config');
@@ -713,13 +713,24 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
           'API Gateway invocation did not return expected data. Check Log Group /aws/lambda/Fiscalismia_RawDataETL'
       });
     }
-    sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
-    // TODO
+    // Debug to Frontend
     // response.write(`data: ${JSON.stringify({ result: tsvRouteData['variable_expenses'] })}\n\n`); // THIS FAILS, OVER 3000 INSERT STATEMENTS
-    response.write(`data: ${JSON.stringify({ result: tsvRouteData['income'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
-    response.write(`data: ${JSON.stringify({ result: tsvRouteData['fixed_costs'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
-    response.write(`data: ${JSON.stringify({ result: tsvRouteData['investments'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
-    response.write(`data: ${JSON.stringify({ result: tsvRouteData['food_items'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
+    // response.write(`data: ${JSON.stringify({ result: tsvRouteData['income'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
+    // response.write(`data: ${JSON.stringify({ result: tsvRouteData['fixed_costs'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
+    // response.write(`data: ${JSON.stringify({ result: tsvRouteData['investments'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
+    // response.write(`data: ${JSON.stringify({ result: tsvRouteData['food_items'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
+    if (tsvRouteData) {
+      logger.info('Starting Datase Insertion simulation...');
+      try {
+        await handleDatabaseInitPostEtl(tsvRouteData);
+      } catch (dbError: unknown) {
+        const dbMessage = dbError instanceof Error ? dbError.message : 'Unknown database error.';
+        sendSSEdata(dbMessage, 'error', response);
+        response.end();
+        return;
+      }
+    }
+    sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
     response.end();
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -755,7 +766,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
  */
 function sendSSEdata(
   message: any,
-  level: 'info' | 'success' | 'magenta',
+  level: 'info' | 'success' | 'magenta' | 'error',
   response: Response<any, Record<string, any>>
 ) {
   const msg = `${getLocalTimestamp()}: ${message}`;
@@ -763,6 +774,137 @@ function sendSSEdata(
   logger.debug(message);
   response.write(data);
 }
+
+/**
+ * @param insertStatementMap Map containing table category keys and insert statements
+ * @description DELETE request to TRUNCATE the entire user schema table content,
+ * essentially clearing the database and executing a reset for the user's data
+ */
+const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData) => {
+  const client = await pool.connect();
+  const etlResult: Record<string, any> = {};
+  try {
+    await client.query('BEGIN');
+    if (insertStatementMap.variable_expenses) {
+      await client.query(insertStatementMap.variable_expenses);
+      const checkVariableExpenseStaging = await client.query('SELECT COUNT(*) as rowcnt FROM staging_variable_bills');
+      if (
+        checkVariableExpenseStaging &&
+        checkVariableExpenseStaging.rows &&
+        checkVariableExpenseStaging.rows[0].rowcnt &&
+        Number(checkVariableExpenseStaging.rows[0].rowcnt) > 0
+      ) {
+        logger.debug(`Starting ETL process with ${checkVariableExpenseStaging.rows[0].rowcnt} rows staged.`);
+        const etlVarExpResult = await client.query('SELECT ETL_VARIABLE_EXPENSES()');
+        if (etlVarExpResult && etlVarExpResult.rows?.length > 0) {
+          Object.assign(etlResult, etlVarExpResult.rows);
+        } else {
+          throw new Error('Postgres Function ETL_VARIABLE_EXPENSES() did not succeed.');
+        }
+        await client.query('TRUNCATE TABLE staging_variable_bills');
+      } else {
+        throw new Error('Could not get rowcount of Table staging_variable_bills.');
+      }
+    } else {
+      throw new Error('variable_expenses are not defined in the insertStatementMap object.');
+    }
+    if (insertStatementMap.fixed_costs) {
+      logger.debug('Inserting into fixed_costs...');
+      await client.query(insertStatementMap.fixed_costs);
+      const result = await client.query('SELECT COUNT(*) as rowcnt FROM fixed_costs');
+      if (result && result.rows?.length > 0) {
+        Object.assign(etlResult, { fixed_costs: result.rows[0].rowcnt });
+      } else {
+        throw new Error('The client query for fixed_costs did not succeed.');
+      }
+    } else {
+      throw new Error('fixed_costs are not defined in the insertStatementMap object.');
+    }
+    if (insertStatementMap.income) {
+      logger.debug('Inserting into fixed_income...');
+      await client.query(insertStatementMap.income);
+      const result = await client.query('SELECT COUNT(*) as rowcnt FROM fixed_income');
+      if (result && result.rows && result.rows[0].rowcnt && Number(result.rows[0].rowcnt) > 0) {
+        Object.assign(etlResult, { fixed_income: result.rows[0].rowcnt });
+      } else {
+        throw new Error('The client query for income did not succeed.');
+      }
+    } else {
+      throw new Error('income is not defined in the insertStatementMap object.');
+    }
+    if (insertStatementMap.food_items) {
+      logger.debug('Inserting into table_food_prices...');
+      await client.query(insertStatementMap.food_items);
+      const result = await client.query('SELECT COUNT(*) as rowcnt FROM table_food_prices');
+      if (result && result.rows && result.rows[0].rowcnt && Number(result.rows[0].rowcnt) > 0) {
+        Object.assign(etlResult, { table_food_prices: result.rows[0].rowcnt });
+      } else {
+        throw new Error('The client query for food_items did not succeed.');
+      }
+    } else {
+      throw new Error('food_items are not defined in the insertStatementMap object.');
+    }
+    if (insertStatementMap.investments) {
+      logger.debug('Inserting into investments...');
+      await client.query(insertStatementMap.investments);
+      const result = await client.query(`SELECT
+        (SELECT COUNT(*) FROM investments)                  AS inv_cnt,
+        (SELECT COUNT(*) FROM bridge_investment_dividends)  AS bridge_cnt,
+        (SELECT COUNT(*) FROM investment_taxes)             AS tax_cnt,
+        (SELECT COUNT(*) FROM investment_dividends)         AS div_cnt`);
+      if (
+        result &&
+        result.rows &&
+        'inv_cnt' in result.rows[0] &&
+        'bridge_cnt' in result.rows[0] &&
+        'tax_cnt' in result.rows[0] &&
+        'div_cnt' in result.rows[0]
+      ) {
+        Object.assign(etlResult, {
+          investments: result.rows[0].inv_cnt,
+          bridge_investment_dividends: result.rows[0].bridge_cnt,
+          investment_raxes: result.rows[0].tax_cnt,
+          investment_dividends: result.rows[0].div_cnt
+        });
+      } else {
+        throw new Error('The client query for investments did not succeed.');
+      }
+    } else {
+      throw new Error('investments are not defined in the insertStatementMap object.');
+    }
+    console.log(etlResult);
+    await client.query('ROLLBACK');
+  } catch (error: unknown) {
+    await client.query('ROLLBACK');
+    // Type guard to check if it's a PostgresError with the FK code
+    const isFkViolation = (e: any): e is PostgresError => {
+      return e && e.code === '23503';
+    };
+    const isUkViolation = (e: any): e is PostgresError => {
+      return e && e.code === '23505';
+    };
+
+    if (isFkViolation(error)) {
+      const errorMsg = `Foreign Key violation: ${error.detail}.`;
+      logger.warn(errorMsg);
+      error.message = errorMsg;
+      throw new Error(errorMsg);
+    }
+    if (isUkViolation(error)) {
+      const errorMsg = `Unique Key violation: ${error.detail}.`;
+      logger.warn(errorMsg);
+      error.message = errorMsg;
+      throw new Error(errorMsg);
+    }
+    if (error instanceof Error) {
+      error.message = `Transaction ROLLBACK. The ETL Insertion process has failed. ${error.message}`;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   getTestData,
   getRootUrlResponse,

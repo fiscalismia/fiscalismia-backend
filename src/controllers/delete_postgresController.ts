@@ -250,7 +250,7 @@ const deleteInvestmentDividend = asyncHandler(async (request: Request, response:
     await client.query('ROLLBACK');
     response.status(500);
     if (error instanceof Error) {
-      error.message = `Transaction ROLLBACK. Row could not be deleted from investments. ${error.message}`;
+      error.message = `Transaction ROLLBACK. Row(s) could not be deleted from investment_taxes|bridge_investment_dividends|investment_dividends. ${error.message}`;
     }
     throw error;
   } finally {
@@ -298,9 +298,7 @@ const truncateAllUserSchemaTables = asyncHandler(async (request: Request, respon
     } else {
       throw new Error('DELETION of user schema tables did not succeed.');
     }
-    await client.query('ROLLBACK');
-    // response.status(200).send(results);
-    // return result;
+    await client.query('COMMIT');
   } catch (error: unknown) {
     await client.query('ROLLBACK');
     // Type guard to check if it's a PostgresError with the FK code
@@ -318,7 +316,7 @@ const truncateAllUserSchemaTables = asyncHandler(async (request: Request, respon
       response.status(500);
     }
     if (error instanceof Error) {
-      error.message = `Transaction ROLLBACK. Row could not be deleted from investments. ${error.message}`;
+      error.message = `Transaction ROLLBACK. Database truncate of user schema encountered an error. ${error.message}`;
     }
     throw error;
   } finally {

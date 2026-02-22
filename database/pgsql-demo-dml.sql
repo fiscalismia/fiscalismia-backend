@@ -727,7 +727,7 @@ VALUES (
 'Resident Evil 4 Remake',
 INITCAP('Leisure'),
 INITCAP('Steam'),
-29.99,
+39.99,
 TO_DATE('01.01.2024','DD.MM.YYYY'),
 'N',
 'N',
