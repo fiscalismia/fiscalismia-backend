@@ -539,11 +539,11 @@ BEGIN
 	end loop;
 
     RETURN QUERY VALUES
-    ('category: ', insert_count_category),
-    ('store: ', insert_count_store),
-    ('sensitivity: ', insert_count_sensitivity),
-    ('variable_expenses: ', insert_count_variable_expenses),
-    ('bridge_var_exp_sensitivity: ', insert_count_bridge_sensitivities);
+    ('category', insert_count_category),
+    ('store', insert_count_store),
+    ('sensitivity', insert_count_sensitivity),
+    ('variable_expenses', insert_count_variable_expenses),
+    ('bridge_var_exp_sensitivity', insert_count_bridge_sensitivities);
 end;
 $$ LANGUAGE plpgsql;
 

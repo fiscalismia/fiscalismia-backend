@@ -528,7 +528,7 @@ SELECT
   (SELECT COUNT(*) FROM i1) AS bridge_investment_dividends,
   (SELECT COUNT(*) FROM i2) AS investment_taxes,
   (SELECT COUNT(*) FROM i3) AS investment_dividends,
-  (SELECT COUNT(*) FROM i1) AS investments`;
+  (SELECT COUNT(*) FROM i4) AS investments`;
 module.exports = {
   buildInsertStagingVariableBills,
   buildInsertFixedCosts,

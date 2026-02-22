@@ -722,7 +722,11 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
     if (tsvRouteData) {
       logger.info('Starting Datase Insertion simulation...');
       try {
-        await handleDatabaseInitPostEtl(tsvRouteData);
+        // ### START ACTUAL MASS INSERTION TO FULLY INITIALIZE DATABASE
+        const insertionReponse = await handleDatabaseInitPostEtl(tsvRouteData);
+        sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
+        response.write(`data: ${JSON.stringify({ result: JSON.stringify(insertionReponse) })}\n\n`);
+        response.end();
       } catch (dbError: unknown) {
         const dbMessage = dbError instanceof Error ? dbError.message : 'Unknown database error.';
         sendSSEdata(dbMessage, 'error', response);
@@ -730,8 +734,6 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
         return;
       }
     }
-    sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
-    response.end();
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
@@ -776,9 +778,11 @@ function sendSSEdata(
 }
 
 /**
+ * @description Receives the INSERT INTO statements from the database initialization ETL workflow,
+ * then attempts to INSERT all rows into all tables within one transaction, which fails with a
+ * ROLLBACK in case any of the INSERT statements encounter an error.
  * @param insertStatementMap Map containing table category keys and insert statements
- * @description DELETE request to TRUNCATE the entire user schema table content,
- * essentially clearing the database and executing a reset for the user's data
+ * @returns Object with tables as keys and values as inserted row counts
  */
 const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData) => {
   const client = await pool.connect();
@@ -786,6 +790,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
   try {
     await client.query('BEGIN');
     if (insertStatementMap.variable_expenses) {
+      // ### VARIABLE EXPENSES ETL PROCEDURE
       await client.query(insertStatementMap.variable_expenses);
       const checkVariableExpenseStaging = await client.query('SELECT COUNT(*) as rowcnt FROM staging_variable_bills');
       if (
@@ -794,10 +799,22 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
         checkVariableExpenseStaging.rows[0].rowcnt &&
         Number(checkVariableExpenseStaging.rows[0].rowcnt) > 0
       ) {
-        logger.debug(`Starting ETL process with ${checkVariableExpenseStaging.rows[0].rowcnt} rows staged.`);
+        logger.debug(`Executing ETL function with ${checkVariableExpenseStaging.rows[0].rowcnt} rows staged.`);
         const etlVarExpResult = await client.query('SELECT ETL_VARIABLE_EXPENSES()');
         if (etlVarExpResult && etlVarExpResult.rows?.length > 0) {
-          Object.assign(etlResult, etlVarExpResult.rows);
+          // format: { etl_variable_expenses: '(table_name,22)' }
+          // so we first get the value, trim the single quote and brackets,
+          // then split the string at the colon and use the left hand part as key, and the right as value
+          const queryResultExtraction = etlVarExpResult.rows.map((e: any) =>
+            e.etl_variable_expenses.substring(1, e.etl_variable_expenses.length - 2)
+          );
+          const jsonFormattedEtlResult = Object.fromEntries(
+            queryResultExtraction.map((e: any) => {
+              const [key, value] = e.split(',');
+              return [key, Number(value)];
+            })
+          );
+          Object.assign(etlResult, { variable_expenses: jsonFormattedEtlResult });
         } else {
           throw new Error('Postgres Function ETL_VARIABLE_EXPENSES() did not succeed.');
         }
@@ -808,6 +825,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
     } else {
       throw new Error('variable_expenses are not defined in the insertStatementMap object.');
     }
+    // ### FIXED COSTS INSERTION
     if (insertStatementMap.fixed_costs) {
       logger.debug('Inserting into fixed_costs...');
       await client.query(insertStatementMap.fixed_costs);
@@ -820,6 +838,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
     } else {
       throw new Error('fixed_costs are not defined in the insertStatementMap object.');
     }
+    // ### FIXED INCOME INSERTION
     if (insertStatementMap.income) {
       logger.debug('Inserting into fixed_income...');
       await client.query(insertStatementMap.income);
@@ -832,6 +851,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
     } else {
       throw new Error('income is not defined in the insertStatementMap object.');
     }
+    // ### TABLE FOOD PRICES INSERTION
     if (insertStatementMap.food_items) {
       logger.debug('Inserting into table_food_prices...');
       await client.query(insertStatementMap.food_items);
@@ -844,6 +864,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
     } else {
       throw new Error('food_items are not defined in the insertStatementMap object.');
     }
+    // ### INVESTMENTS; TAXES AND DIVIDENDS INSERTION
     if (insertStatementMap.investments) {
       logger.debug('Inserting into investments...');
       await client.query(insertStatementMap.investments);
@@ -861,10 +882,12 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
         'div_cnt' in result.rows[0]
       ) {
         Object.assign(etlResult, {
-          investments: result.rows[0].inv_cnt,
-          bridge_investment_dividends: result.rows[0].bridge_cnt,
-          investment_raxes: result.rows[0].tax_cnt,
-          investment_dividends: result.rows[0].div_cnt
+          investments: {
+            investments: result.rows[0].inv_cnt,
+            bridge_investment_dividends: result.rows[0].bridge_cnt,
+            investment_taxes: result.rows[0].tax_cnt,
+            investment_dividends: result.rows[0].div_cnt
+          }
         });
       } else {
         throw new Error('The client query for investments did not succeed.');
@@ -872,8 +895,8 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
     } else {
       throw new Error('investments are not defined in the insertStatementMap object.');
     }
-    console.log(etlResult);
-    await client.query('ROLLBACK');
+    await client.query('COMMIT');
+    return etlResult;
   } catch (error: unknown) {
     await client.query('ROLLBACK');
     // Type guard to check if it's a PostgresError with the FK code
