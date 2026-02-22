@@ -22,7 +22,7 @@ const standardOptions = {
  */
 const unauthenticatedRateLimiter = rateLimit({
   ...standardOptions,
-  max: 10 * config.RATE_LIMIT_MULTIPLICATOR,
+  max: 15 * config.RATE_LIMIT_MULTIPLICATOR,
   message: 'Too many login or account creation attempts. Please try again in 15 minutes.'
 });
 
@@ -40,7 +40,7 @@ const databaseHealthCheckRateLimiter = rateLimit({
  */
 const rootUrlRateLimiter = rateLimit({
   ...standardOptions,
-  max: 30 * config.RATE_LIMIT_MULTIPLICATOR,
+  max: 50 * config.RATE_LIMIT_MULTIPLICATOR,
   message: 'Pleae refrain from hitting my root url repeatedly. You can try again in 15 minutes.'
 });
 
@@ -49,7 +49,7 @@ const rootUrlRateLimiter = rateLimit({
  */
 const genericFallbackRateLimiter = rateLimit({
   ...standardOptions,
-  max: 90 * config.RATE_LIMIT_MULTIPLICATOR,
+  max: 180 * config.RATE_LIMIT_MULTIPLICATOR,
   message: 'Exceeded generic rate limit. Try again after 15 minutes or contact your administrator to raise limit.'
 });
 
@@ -72,9 +72,9 @@ const authenticatedRateLimiter = rateLimit({
   ...standardOptions,
   max: (req: Request, _res: Response) => {
     if (req.method === 'GET' && isProdEnvironment) {
-      return 600 * config.RATE_LIMIT_MULTIPLICATOR;
-    } else if (req.method === 'GET' && !isProdEnvironment) {
       return 1200 * config.RATE_LIMIT_MULTIPLICATOR;
+    } else if (req.method === 'GET' && !isProdEnvironment) {
+      return 2400 * config.RATE_LIMIT_MULTIPLICATOR;
     }
     return 90 * config.RATE_LIMIT_MULTIPLICATOR;
   },
