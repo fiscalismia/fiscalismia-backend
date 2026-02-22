@@ -76,7 +76,7 @@ const authenticatedRateLimiter = rateLimit({
     } else if (req.method === 'GET' && !isProdEnvironment) {
       return 2400 * config.RATE_LIMIT_MULTIPLICATOR;
     }
-    return 90 * config.RATE_LIMIT_MULTIPLICATOR;
+    return isProdEnvironment ? 90 * config.RATE_LIMIT_MULTIPLICATOR : 360 * config.RATE_LIMIT_MULTIPLICATOR;
   },
   message:
     'Authenticated route rate limit exceeded. Try again in 15 minutes or ask your administrator to increase this limit.'

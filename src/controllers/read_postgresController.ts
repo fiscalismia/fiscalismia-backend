@@ -724,8 +724,10 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
       try {
         // ### START ACTUAL MASS INSERTION TO FULLY INITIALIZE DATABASE
         const insertionReponse = await handleDatabaseInitPostEtl(tsvRouteData);
+        const resultSummary = { timestamp: getLocalTimestamp(), result: insertionReponse };
+        logger.debug('Database Insertion Summary: ' + JSON.stringify(resultSummary));
+        response.write(`data: ${JSON.stringify(resultSummary)}\n\n`);
         sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
-        response.write(`data: ${JSON.stringify({ result: JSON.stringify(insertionReponse) })}\n\n`);
         response.end();
       } catch (dbError: unknown) {
         const dbMessage = dbError instanceof Error ? dbError.message : 'Unknown database error.';
@@ -806,7 +808,7 @@ const handleDatabaseInitPostEtl = async (insertStatementMap: TsvTableInsertData)
           // so we first get the value, trim the single quote and brackets,
           // then split the string at the colon and use the left hand part as key, and the right as value
           const queryResultExtraction = etlVarExpResult.rows.map((e: any) =>
-            e.etl_variable_expenses.substring(1, e.etl_variable_expenses.length - 2)
+            e.etl_variable_expenses.substring(1, e.etl_variable_expenses.length - 1)
           );
           const jsonFormattedEtlResult = Object.fromEntries(
             queryResultExtraction.map((e: any) => {
