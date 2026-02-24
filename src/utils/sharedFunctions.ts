@@ -11,7 +11,7 @@ export const regExAlphaNumeric = /^[a-zA-Z0-9._-]*$/;
 export const regExEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export const replaceCommaAndParseFloat = (input: string) => {
-  return parseFloat(input.replace(',', '.').replace(/[^\d.]/g, ''));
+  return parseFloat(input.replace(/,/g, '.').replace(/[^\d.-]/g, ''));
 };
 
 export const getLocalTimestamp = () => {
