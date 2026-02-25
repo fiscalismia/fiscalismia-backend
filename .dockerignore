@@ -36,3 +36,6 @@ reports/snyk-dependency-analysis.txt
 
 #Snyk
 .dccache
+
+# Workflows
+.github/workflows

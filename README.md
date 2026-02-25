@@ -6,7 +6,6 @@ Fiscalismia is a Web Service for visualizing, analyzing, aggregating, importing 
 
 fiscalismia-backend consists of an express server running a REST API. Requests from the frontend are handled by the backend's REST API querying data from a postgres db. The database runs within a docker container for development. JWT tokens are used for authentication. Local Browser Storage for Session Cookies. The REST API is designed with full CRUD operations in mind, allowing for dynamic user input, sanitized before being commited to the db. In production, we use a cloud-hosted scale-to-zero PostgreSQL database on Neon.tech with a generous free tier. The backend is built in a continuous integration pipeline, tested, scanned for vulnerabilities and published as a docker image to a public docker registry for later deployment on Hetzner VM's, orchestrated via Github Actions and OpenSSH via Bastion Host for access to Instances in private subnets.
 
-
 ## Table of Contents
 
 - [Technologies](#technologies)
@@ -30,30 +29,6 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 - **ESLint and Prettier:** Linter and Formatter for ensuring code quality and enforcing coding standards.
 - **Winston Logger:** A versatile logging library for Node.js, utilized for logging events and errors in the server.
 - **Nodemon/ts-node:** Hot Reload upon file changes of the server during development, enhancing the development workflow.
-
-## Pipeline
-
-1. **Triggers:**
-   - Runs on every push and pull request to the `main` branch.
-
-2. **Job: `test`**:
-   - **Steps:**
-     - Set up Node.js (v20.12.2), install dependencies and Snyk.
-     - Run type checks and ESLint analysis.
-     - Perform Snyk static code and dependency security analysis.
-     - Publish type check, ESLint, and Snyk reports as artifacts.
-     - Initialize a fresh Postgres database and seed with DDL/DML scripts.
-     - Run REST API tests /w 100% coverage using `supertest`.
-
-3. **Job: `build`**:
-   - **Steps:**
-     - Build Backend Docker image.
-     - Publish Docker image to GHCR (TODO: Switch to AWS ECR)
-
-4. **Job: `deploy`**:
-   - **Steps:**
-     - TODO: Deploy on Hetzner Self Managed Kubernetes via ArgoCD (K3s)
-     - TODO: Setup AWS S3 bucket for file upload persistence
 
 ## Setup
 
