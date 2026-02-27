@@ -139,7 +139,8 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    GID=1000
 
    # PIPELINE INTEGRATIONS
-   SNYK_TOKEN=
+   SNYK_TOKEN=xxx
+   API_GW_SECRET_KEY=xxx
    ```
 
 4. **Github Secrets:**
