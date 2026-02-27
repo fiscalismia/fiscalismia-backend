@@ -36,10 +36,10 @@ app.set('trust proxy', isDemo ? 1 : isProd ? 1 : 0);
  * Cross-origin resource sharing - access control from outide domains
  */
 const allowedOrigins = [
-  'http://localhost:3001', // local frontend development
-  'http://localhost:4173', // local frontend development vite preview
-  'http://localhost:443', // local frontend production testing
-  'http://localhost:3002', // local backend (persisted images)
+  'http://127.0.0.1:3001', // local frontend development
+  'http://127.0.0.1:4173', // local frontend development vite preview
+  'http://127.0.0.1:443', // local frontend production testing
+  'http://127.0.0.1:3002', // local backend (persisted images)
   `https://${config.PUBLIC_FRONTEND_DOMAIN}`,
   `https://${config.PUBLIC_DEMO_FRONTEND_DOMAIN}`
 ];
