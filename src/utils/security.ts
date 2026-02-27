@@ -12,7 +12,8 @@ require('dotenv').config();
 const generateToken = (user: User) => {
   logger.info('security.js received request to generate jsonwebtoken');
   const secret = process.env.JWT_SECRET;
-  const token = jwt.sign({ user }, secret, { expiresIn: '1d' });
+  const isProd = process.env.NODE_ENV === 'production';
+  const token = jwt.sign({ user }, secret, { expiresIn: isProd ? '1h' : '1w' });
   return token;
 };
 module.exports = { generateToken };
