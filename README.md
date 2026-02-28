@@ -126,6 +126,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    DB_CONNECTION_URL=
    FRONTEND_PORT=3001
    BACKEND_PORT=3002
+   FASTAPI_PORT=3003
    HOST_ADDRESS=127.0.0.1
 
    # Local Docker DB Setup

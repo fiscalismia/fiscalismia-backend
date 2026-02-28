@@ -1,3 +1,6 @@
+#############################################################################
+################ DEVELOPMENT WITH HOT MODULE REPLACEMENT ####################
+#############################################################################
 volumes:
   database-v:
     name: "database-v"
@@ -50,9 +53,40 @@ services:
     depends_on:
       - fiscalismia-postgres
 
+  fiscalismia-webscraper:
+    image: fiscalismia-webscraper-dev:latest
+    container_name: fiscalismia-webscraper-dev
+    build:
+      context: ../fiscalismia-webscraper
+      dockerfile: Dockerfile
+      pull: true
+    environment:
+      - BUILD_VERSION=dev-latest
+    env_file:
+      - ../fiscalismia-webscraper/.env
+    volumes:
+      # The ':z' flag is required on SELinux-enabled systems (like Fedora/CentOS)
+      # to relabel the host directory. This allows the container to access the
+      # mounted volume by applying a shared SELinux label.
+      - ../fiscalismia-webscraper/main.py:/app/main.py:z
+      - ../fiscalismia-webscraper/api/:/app/api:z
+    networks:
+      - fiscalismia-network
+    ports:
+    # Binding directly to uvicorn app port skips nginx on port 5000 entirely
+    - ${FASTAPI_PORT}:${FASTAPI_PORT}
+    command: >
+      uvicorn api.main:fastapi
+      --host 0.0.0.0
+      --port ${FASTAPI_PORT}
+      --reload
+      --reload-dir /app/api
+      --timeout-keep-alive 90
+      --log-level debug
+
   fiscalismia-frontend:
-    image: fiscalismia-frontend:latest
-    container_name: fiscalismia-frontend
+    image: fiscalismia-frontend-dev:latest
+    container_name: fiscalismia-frontend-dev
     build:
       context: ../fiscalismia-frontend
       dockerfile: Dockerfile.dev
