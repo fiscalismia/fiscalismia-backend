@@ -633,10 +633,10 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
  * the backend then uses this TSV data for PSQL Statement generation in the backend's own routes.
  * @method HTTP GET
  * @async asyncHandler passes exceptions within routes to errorHandler middleware
- * @route /api/fiscalismia/admin/raw_data_etl
+ * @route /apigw/fiscalismia/post/raw_data_etl
  */
 const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: Response) => {
-  logger.http('create_postgresController received GET to /api/fiscalismia/admin/raw_data_etl');
+  logger.http('create_postgresController received GET to /apigw/fiscalismia/post/raw_data_etl');
   // SERVER SIDE EVENTS WITH EVENTSOURCE STREAMING UPDATES
   const sse_headers = {
     'Content-Type': 'text/event-stream',
@@ -650,7 +650,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
       response.status(500).json({ error: 'Missing Secret Key for API Gateway' });
     }
     /** ### CENTRAL CONFIGURATION ### */
-    const gatewayEndpoint = `${config.AWS_API_GATEWAY_ENDPOINT}/api/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`;
+    const gatewayEndpoint = `${config.AWS_API_GATEWAY_ENDPOINT}/apigw/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`;
     const gatewayRequestBody = undefined;
     const gatewayConfig = {
       headers: {
