@@ -63,6 +63,12 @@ RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs
 # TEMPORARY PSQL FOR DEBUGGING
 # RUN apk add --no-cache postgresql16-client
 
+# Remove default Nginx site configuration
+RUN rm /etc/nginx/sites-enabled/default
+
+# Remove default config that listens on 8080
+RUN rm -f /etc/nginx/conf.d/default.conf
+
 # Copy nginx and Supervisor config
 ARG NGINX_CONF
 COPY $NGINX_CONF /etc/nginx/nginx.conf
