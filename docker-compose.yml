@@ -60,8 +60,10 @@ services:
       context: ../fiscalismia-webscraper
       dockerfile: Dockerfile
       pull: true
+      args:
+        BUILD_VERSION: dev-latest
     environment:
-      - BUILD_VERSION=dev-latest
+      APP_VERSION: dev-latest
     env_file:
       - ../fiscalismia-webscraper/.env
     volumes:
@@ -72,9 +74,11 @@ services:
       - ../fiscalismia-webscraper/api/:/app/api:z
     networks:
       - fiscalismia-network
-    ports:
     # Binding directly to uvicorn app port skips nginx on port 5000 entirely
+    ports:
     - ${FASTAPI_PORT}:${FASTAPI_PORT}
+    # command overwrites entrypoint, essentially bypassing supervisord and nginx
+    # in order for uvicorn hot reload to work on mounted directories
     command: >
       uvicorn api.main:fastapi
       --host 0.0.0.0
@@ -82,7 +86,7 @@ services:
       --reload
       --reload-dir /app/api
       --timeout-keep-alive 90
-      --log-level debug
+      --log-level info
 
   fiscalismia-frontend:
     image: fiscalismia-frontend-dev:latest
