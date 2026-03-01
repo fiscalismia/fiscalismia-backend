@@ -1,5 +1,5 @@
 # This Dockerfile is used for local development providing a freshly populated database
-FROM postgres:16.3-alpine3.20
+FROM postgres:16.9-alpine3.20
 # DDL (Data Definition Language) is used to define the structure of the database, such as creating tables, sequences, constraints.
 COPY database/pgsql-public-ddl.sql /initialize/pgsql-public-ddl.sql
 COPY database/pgsql-user-ddl.sql /initialize/pgsql-user-ddl.sql
