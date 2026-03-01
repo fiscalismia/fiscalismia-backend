@@ -647,7 +647,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
   response.flushHeaders(); // to establish connection with client
   try {
     if (!process.env.API_GW_SECRET_KEY) {
-      response.status(500).json({ error: 'Missing Secret Key for API Gateway' });
+      throw new Error('Missing env var API_GW_SECRET_KEY for API Gateway invocation');
     }
     /** ### CENTRAL CONFIGURATION ### */
     const gatewayEndpoint = `${config.AWS_API_GATEWAY_ENDPOINT}/apigw/fiscalismia/post/raw_data_etl/invoke_lambda/return_tsv_file_urls`;
@@ -668,8 +668,6 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
     /** ### AWS API GATEWAY POST REQUEST TRIGGERING ETL ### */
     sendSSEdata('Querying AWS API Gateway invoking ETL process...', 'info', response);
     const gatewayResponse = await axios.post(gatewayEndpoint, gatewayRequestBody, gatewayConfig);
-    // eslint-disable-next-line no-console
-    console.log(gatewayResponse);
     if (gatewayResponse?.status == 202 && gatewayResponse.data) {
       sendSSEdata('API Gateway invoked successfully.', 'success', response);
       if (gatewayResponse.data.presigned_urls && gatewayResponse.data.presigned_urls.length > 0) {
@@ -697,23 +695,19 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
               sendSSEdata(insertStatementOverview, 'magenta', response);
               tsvRouteData[match] = localTsvResponse.data;
             } else {
-              response.status(400);
               throw new Error(`Local API invocation for route ${route} failed.`);
             }
           } else {
-            response.status(400);
             throw new Error('TSV download from S3 presigned_url failed');
           }
         }
       } else {
-        response.status(400);
         throw new Error('API Gateway response does not include s3 presigned_urls.');
       }
     } else {
-      response.status(400).json({
-        message:
-          'API Gateway invocation did not return expected data. Check Log Group /aws/lambda/Fiscalismia_RawDataETL'
-      });
+      throw new Error(
+        'API Gateway invocation did not return expected data. Check Log Group /aws/lambda/Fiscalismia_RawDataETL'
+      );
     }
     // Debug to Frontend
     // response.write(`data: ${JSON.stringify({ result: tsvRouteData['variable_expenses'] })}\n\n`); // THIS FAILS, OVER 3000 INSERT STATEMENTS
@@ -722,7 +716,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
     // response.write(`data: ${JSON.stringify({ result: tsvRouteData['investments'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
     // response.write(`data: ${JSON.stringify({ result: tsvRouteData['food_items'] })}\n\n`); // THIS WORKS under 100 INSERT Statements
     if (tsvRouteData) {
-      logger.info('Starting Datase Insertion simulation...');
+      logger.info('Starting Database Mass Insertion...');
       try {
         // ### START ACTUAL MASS INSERTION TO FULLY INITIALIZE DATABASE
         const insertionReponse = await handleDatabaseInitPostEtl(tsvRouteData);
@@ -730,12 +724,10 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
         logger.debug('Database Insertion Summary: ' + JSON.stringify(resultSummary));
         response.write(`data: ${JSON.stringify(resultSummary)}\n\n`);
         sendSSEdata('===== ETL process completed successfully. =====', 'success', response);
-        response.end();
       } catch (dbError: unknown) {
         const dbMessage = dbError instanceof Error ? dbError.message : 'Unknown database error.';
         sendSSEdata(dbMessage, 'error', response);
-        response.end();
-        return;
+        throw dbError;
       }
     }
   } catch (error: unknown) {
@@ -743,20 +735,14 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
       const status = error.response?.status;
       const data = error.response?.data;
       const message = error.response?.data?.message ?? error.message;
-
       logger.error(`AxiosError [${status}]: ${JSON.stringify(data)}`);
-      response.status(status ?? 502).json({
-        error: 'Lambda invocation failed',
-        status: status,
-        message: message,
-        detail: data
-      });
+      sendSSEdata(`AxiosError [${status}]: ${message}`, 'error', response);
+    } else {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      sendSSEdata(`API Gateway invocation failed [status: 500]: ${msg}`, 'error', response);
     }
-    response.status(500);
-    if (error instanceof Error) {
-      error.message = `API Gateway invocation failed. ${error.message}`;
-    }
-    throw error;
+  } finally {
+    response.end();
   }
 });
 
