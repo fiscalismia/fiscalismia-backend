@@ -154,9 +154,9 @@ jobs:
       uses: actions/checkout@v5
       # https://github.com/actions/checkout
 
-    - name: AutoIncrement Version
+    - name: Extract Version from package.json
       run: |
-        echo "BUILD_VERSION=0.9.1" >> $GITHUB_ENV
+        echo "BUILD_VERSION=$(jq -r '.version' package.json)" >> $GITHUB_ENV
 
     - name: Set Buildah Build Timestamp
       shell: bash

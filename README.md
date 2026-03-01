@@ -234,7 +234,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 
    podman build \
       -f "Dockerfile" \
-      --build-arg BACKEND_VERSION=0.9.0 \
+      --build-arg BACKEND_VERSION=0.9.2 \
       --build-arg ENVIRONMENT=docker-development \
       --build-arg CLOUD_DB=false \
       --build-arg NGINX_CONF=nginx.conf \
