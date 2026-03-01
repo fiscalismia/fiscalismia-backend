@@ -58,7 +58,8 @@ COPY database/pgsql-demo-dml.sql ./database/pgsql-demo-dml.sql
 RUN apk add --no-cache nginx supervisor
 
 # Create nginx and supervisor Directories
-RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs
+RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs /var/lib/nginx/logs \
+    && ln -sf /dev/stderr /var/lib/nginx/logs/error.log
 
 # TEMPORARY PSQL FOR DEBUGGING
 # RUN apk add --no-cache postgresql16-client
