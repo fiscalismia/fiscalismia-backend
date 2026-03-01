@@ -633,10 +633,10 @@ const getSensitivitiesOfPurchaseyByVarExpenseId = asyncHandler(async (request: R
  * the backend then uses this TSV data for PSQL Statement generation in the backend's own routes.
  * @method HTTP GET
  * @async asyncHandler passes exceptions within routes to errorHandler middleware
- * @route /apigw/fiscalismia/post/raw_data_etl
+ * @route /api/fiscalismia/post/raw_data_etl
  */
 const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: Response) => {
-  logger.http('create_postgresController received GET to /apigw/fiscalismia/post/raw_data_etl');
+  logger.http('create_postgresController received GET to /api/fiscalismia/post/raw_data_etl');
   // SERVER SIDE EVENTS WITH EVENTSOURCE STREAMING UPDATES
   const sse_headers = {
     'Content-Type': 'text/event-stream',
@@ -668,6 +668,8 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
     /** ### AWS API GATEWAY POST REQUEST TRIGGERING ETL ### */
     sendSSEdata('Querying AWS API Gateway invoking ETL process...', 'info', response);
     const gatewayResponse = await axios.post(gatewayEndpoint, gatewayRequestBody, gatewayConfig);
+    // eslint-disable-next-line no-console
+    console.log(gatewayResponse);
     if (gatewayResponse?.status == 202 && gatewayResponse.data) {
       sendSSEdata('API Gateway invoked successfully.', 'success', response);
       if (gatewayResponse.data.presigned_urls && gatewayResponse.data.presigned_urls.length > 0) {
