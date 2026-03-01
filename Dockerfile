@@ -9,7 +9,7 @@ ARG CLOUD_DB
 ARG NGINX_CONF
 ARG BACKEND_PORT
 
-FROM node:20.12.2-alpine3.19 AS build
+FROM node:20.18.1-alpine3.19 AS build
 WORKDIR /build-dir/
 # copy required files for installation and compilation
 COPY package-lock.json ./
@@ -23,7 +23,7 @@ RUN npm run build
 #     __   __   __   __        __  ___    __
 #    |__) |__) /  \ |  \ |  | /  `  |  | /  \ |\ |
 #    |    |  \ \__/ |__/ \__/ \__,  |  | \__/ | \|
-FROM node:20.12.2-alpine3.19
+FROM node:20.18.1-alpine3.19
 
 # add non priviledged system users to run their respective services
 RUN addgroup -g 101 -S nginx && adduser -S -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx nginx
