@@ -739,6 +739,7 @@ const getRawDataEtlInvocation = asyncHandler(async (request: Request, response: 
       sendSSEdata(`AxiosError [${status}]: ${message}`, 'error', response);
     } else {
       const msg = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`API Gateway invocation failed [status: 500]: ${msg}`);
       sendSSEdata(`API Gateway invocation failed [status: 500]: ${msg}`, 'error', response);
     }
   } finally {
