@@ -1,4 +1,4 @@
-FROM node:20.12.2-alpine3.19
+FROM node:20.20.0-alpine3.23
 WORKDIR /fiscalismia-backend/
 COPY LICENSE package-lock.json package.json tsconfig.json ./
 # COPY DB INIT SCRIPTS FOR ON-DEMAND USER SCHEMA CREATION
