@@ -238,7 +238,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       --build-arg ENVIRONMENT=docker-development \
       --build-arg CLOUD_DB=false \
       --build-arg NGINX_CONF=nginx.conf \
-      --build-arg BACKEND_PORT=80 \
+      --build-arg BACKEND_PORT=3002 \
       -t fiscalismia-backend:latest \
       "."
 
@@ -252,7 +252,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
       --net fiscalismia-network \
       --sysctl net.ipv4.ip_unprivileged_port_start=0 \
       --cap-add=NET_BIND_SERVICE \
-      -p 80:80 \
+      -p 3002:5000 \
       fiscalismia-backend:latest
    ```
 

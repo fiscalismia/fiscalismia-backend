@@ -8,6 +8,9 @@ npm-debug.log
 
 # dotenv environment variables file
 .env
+*.pem
+*.key
+.env*
 
 # logs
 logs/combined.log
@@ -39,3 +42,7 @@ reports/snyk-dependency-analysis.txt
 
 # Workflows
 .github/workflows
+
+# Docker
+docker-compose*.yml
+Dockerfile*

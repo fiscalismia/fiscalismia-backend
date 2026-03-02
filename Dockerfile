@@ -46,7 +46,7 @@ ENV ENVIRONMENT=$ENVIRONMENT
 ENV CLOUD_DB=$CLOUD_DB
 
 # Install production packages
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /build-dir/dist ./dist
 
 # copy db init scripts for on-demand user schema creation
@@ -55,7 +55,8 @@ COPY database/pgsql-user-ddl.sql ./database/pgsql-user-ddl.sql
 COPY database/pgsql-demo-dml.sql ./database/pgsql-demo-dml.sql
 
 # Install Nginx (which adds nginx user) and Supervisor
-RUN apk add --no-cache nginx supervisor
+RUN apk add --no-cache nginx supervisor \
+    && rm -rf /var/cache/apk/* /usr/share/man /tmp/*
 
 # Create nginx and supervisor Directories
 RUN mkdir -p /var/log/supervisor /var/log/nginx /etc/nginx/certs /var/lib/nginx/logs \
@@ -73,13 +74,9 @@ COPY $NGINX_CONF /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Change Ownership of directories according to users
-RUN chown -R root:root /var/log/supervisor
-RUN chown -R nginx:nginx /var/log/nginx /etc/nginx/certs/
-RUN chown -R nodejs:nodejs /fiscalismia-backend
-
-# Listen on HTTP/S Port
-ARG BACKEND_PORT
-EXPOSE $BACKEND_PORT
+RUN chown -R root:root /var/log/supervisor \
+    && chown -R nginx:nginx /var/log/nginx /etc/nginx/certs/ \
+    && chown -R nodejs:nodejs /fiscalismia-backend
 
 # Start Supervisor to manage the Nginx and NodeJS unix processes
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
