@@ -19,7 +19,7 @@ services:
     networks:
       - fiscalismia-network
     ports:
-    - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - "0.0.0.0:5432:5432/tcp"
     command: "-p ${POSTGRES_PORT}"
     # to use healthcheck for backend server see https://wittcode.com/blogs/connect-a-node-server-to-postgres-with-docker-compose
     healthcheck:
@@ -49,7 +49,7 @@ services:
     networks:
       - fiscalismia-network
     ports:
-    - ${BACKEND_PORT}:${BACKEND_PORT}
+      - "0.0.0.0:3002:3002/tcp"
     depends_on:
       - fiscalismia-postgres
 
@@ -76,7 +76,7 @@ services:
       - fiscalismia-network
     # Binding directly to uvicorn app port skips nginx on port 5000 entirely
     ports:
-    - ${FASTAPI_PORT}:${FASTAPI_PORT}
+      - "0.0.0.0:3003:3003/tcp"
     # command overwrites entrypoint, essentially bypassing supervisord and nginx
     # in order for uvicorn hot reload to work on mounted directories
     command: >
@@ -105,7 +105,7 @@ services:
     networks:
       - fiscalismia-network
     ports:
-    - ${FRONTEND_PORT}:${FRONTEND_PORT}
+      - "0.0.0.0:3001:3001/tcp"
     depends_on:
       - fiscalismia-backend
 
