@@ -128,7 +128,7 @@ export const tsvRouteData: TsvTableInsertData = {
 /**
  * Bought investments are stored in investments table, if the execution type is sell, tax information is added for investment_taxes table.
  * @description For DB INSERTION via TSV bulk Inserts rather than manual Entry from the frontend
- * @see https://github.com/hangrybear666/fiscalismia-frontend/blob/main/src/types/custom/customTypes.ts
+ * @see https://github.com/fiscalismia/fiscalismia-frontend/blob/main/src/types/custom/customTypes.ts
  * @table investments, investment_taxes
  * @property {string} execution_type string containing the type of execution -> 'buy' or 'sell' *
  * @property {string} description Description of the investment
@@ -166,7 +166,7 @@ export type InvestmentAndTaxes = {
 /**
  * id, price and date range for a temporarily discounted food item
  * @description For DB INSERTION via TSV bulk Inserts rather than manual Entry from the frontend
- * @see https://github.com/hangrybear666/fiscalismia-frontend/blob/main/src/types/custom/customTypes.ts
+ * @see https://github.com/fiscalismia/fiscalismia-frontend/blob/main/src/types/custom/customTypes.ts
  * @table food_price_discounts
  * @property {string} food_item string of a food item
  * @property {string} brand Brand of the food item

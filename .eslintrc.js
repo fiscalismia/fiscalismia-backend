@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   env: { browser: true, es6: true, node: true },
-  ignorePatterns: ['build/'],
+  ignorePatterns: ['**/dist/**', 'build/'],
   overrides: [
     {
       files: ['**/*.ts', '**/*.tsx'],
