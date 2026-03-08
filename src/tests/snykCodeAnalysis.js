@@ -1,5 +1,5 @@
-import fs from 'fs';
-import { exec } from 'child_process';
+const fs = require('fs');
+const { exec } = require('child_process');
 const ERROR_MSG_CHAR_COUNT = 178;
 const LINE_NUM_PAD_COUNT = 5;
 
