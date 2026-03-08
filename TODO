@@ -20,3 +20,4 @@
 
 ### Post Deployment
 - check the `app.set('trust proxy', 1) setting` in production by hitting the api/ip endpoint to find out of the ip address of the X-Forwarded-For header matches the actual ip address or that of a reverse proxy or load balancer
+- Migrate away from dotenv. Dotenv maintainer is being an asshole - use --env-file=.env for node and --node-args='--env-file=.env' for nodemon and NODE_OPTIONS='--env-file=.env'
