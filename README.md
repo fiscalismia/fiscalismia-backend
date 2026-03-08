@@ -279,7 +279,21 @@ podman run \
    -u 0:0 \
    ghcr.io/fiscalismia/fiscalismia-backend-demo:latest
 EOF
+```
    ------
+
+## Updating
+
+```bash
+# list issues
+npm audit
+npm outdated
+# update transitive dependencies to latest allowable range
+npm audit fix
+# force updating transitive dependencies beyond their safe range
+npm audit fix --force
+npm i && npm run typeCheck && npm run eslintAnalysis
+```
 
 ## Testing
 

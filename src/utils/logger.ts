@@ -10,7 +10,10 @@ const logger = createLogger({
     format.timestamp({
       format: getLocalTimestamp
     }),
-    format.printf((info) => `${info.timestamp} ${info.level}: ${info.message ? info.message.trim() : null}`)
+    format.printf(
+      (info) =>
+        `${info.timestamp} ${info.level}: ${info.message ? (typeof info.message === 'string' ? info.message.trim() : String(info.message ?? '')) : null}`
+    )
   ),
   // defaultMeta: { service: 'user-service' }, // define own metadata to be added
   transports: [
@@ -54,7 +57,7 @@ if (process.env.NODE_ENV !== 'production') {
         }),
         format.printf(
           (info) =>
-            `${info.level}: ${info.message ? info.message.trim() : null} at ${colorizer.colorize('timestamp', info.timestamp)}`
+            `${info.level}: ${info.message ? (typeof info.message === 'string' ? info.message.trim() : String(info.message ?? '')) : null} at ${colorizer.colorize('timestamp', info['timestamp'] as string)}`
         )
       )
     })
