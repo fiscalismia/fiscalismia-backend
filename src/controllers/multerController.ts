@@ -38,7 +38,9 @@ const postFoodItemImg = asyncHandler(async (request: Request, response: Response
           );
           response.status(200).send(filePath);
         } else {
-          throw new Error();
+          const errorMsg = 'Food item was not persisted successfully';
+          logger.error(errorMsg);
+          throw new Error(errorMsg);
         }
       } catch (error: unknown) {
         response.status(400);
@@ -69,8 +71,13 @@ const postFoodItemImg = asyncHandler(async (request: Request, response: Response
  * @route /api/fiscalismia/public/img/uploads/:filepath
  */
 const getFoodItemImg = asyncHandler(async (request: Request, response: Response, next: any) => {
-  const filepath = request.params.filepath;
+  const filepath = request.params['filepath'];
   logger.http(`multerController received GET to /api/fiscalismia/public/img/uploads/${filepath}`);
+  if (filepath.includes('/')) {
+    const errorMsg = 'Array filepath received instead of string';
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
   const options = {
     root: path.join(__dirname, '../../', '/public/img/uploads/')
   };
@@ -78,7 +85,7 @@ const getFoodItemImg = asyncHandler(async (request: Request, response: Response,
     // Allows Cross Origin Resource Sharing specifically for the image.
     // Required in order to function with strict Helmet.JS Security Policies
     response.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    response.sendFile(filepath, options, function (err) {
+    response.sendFile(filepath as string, options, function (err) {
       if (err) {
         next(err);
       }
