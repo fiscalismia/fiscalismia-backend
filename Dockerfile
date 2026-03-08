@@ -8,6 +8,7 @@ ARG ENVIRONMENT
 ARG CLOUD_DB
 ARG NGINX_CONF
 
+### INITIAL SETUP ###
 FROM node:24.14.0-alpine3.23 AS build
 WORKDIR /build-dir/
 # copy required files for installation and compilation
@@ -15,7 +16,7 @@ COPY package-lock.json ./
 COPY package.json ./
 COPY tsconfig.json ./
 # run full installation
-RUN npm ci
+RUN npm ci --only=production
 COPY src/ ./src
 RUN npm run build
 

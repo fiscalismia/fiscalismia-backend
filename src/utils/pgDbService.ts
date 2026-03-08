@@ -34,7 +34,6 @@ types.setTypeParser(1700, function (val: string) {
  *    For this purpose, the internal docker network resolves other docker containers via DNS by their container-name.
  *    This name is defined in the docker-compose file for the postgres service and derived from process.env.POSTGRES_HOST
  */
-/* eslint-disable indent */
 const pool =
   process.env.CLOUD_DB !== 'true' // docker dev & test db
     ? new Pool({
