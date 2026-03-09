@@ -6,7 +6,7 @@ const format = require('pg-format');
 const { pool } = require('../utils/pgDbService');
 import { Request, Response } from 'express';
 import { regExAlphaNumeric, regExEmail, usernameRegExp } from '../utils/sharedFunctions';
-import { PostgresError } from '../utils/customTypes';
+import { ParameterizedQuery, PostgresError } from '../utils/customTypes';
 const {
   buildInsertUmUsers,
   buildVerifyUsername,
@@ -25,7 +25,7 @@ const {
 const createUserCredentialsAndSchema = asyncHandler(async (request: Request, response: Response) => {
   logger.http('create_postgresController received POST to /api/fiscalismia/um/credentials');
   const credentials = {
-    username: request.body.username,
+    username: request.body.username?.toLowerCase(),
     email: request.body.email,
     password: request.body.password
   };
@@ -51,24 +51,25 @@ const createUserCredentialsAndSchema = asyncHandler(async (request: Request, res
     response.status(422); // Unprocessable Content
     throw new Error('password must contain alphanumeric characters, hyphens or underscores only!');
   }
+  const userSchemaToInsert = `private_${credentials.username}`;
   const client = await pool.connect();
-  const sqlInsertCredentials = buildInsertUmUsers(credentials);
-  const sqlVerifyCredentials = buildVerifyUsername(credentials);
-  const sqlReceiveUserSchemaTableCount = buildVerifyUserSchemaTableCount(credentials);
-  const sqlInsertSettingsForNewUser = buildInitializeUserSettings(credentials);
+  const queryInsertCredentials: ParameterizedQuery = buildInsertUmUsers(credentials, userSchemaToInsert);
+  const queryVerifyCredentials: ParameterizedQuery = buildVerifyUsername(credentials);
+  const queryReceiveUserSchemaTableCount: ParameterizedQuery = buildVerifyUserSchemaTableCount(userSchemaToInsert);
+  const queryInsertSettingsForNewUser: ParameterizedQuery = buildInitializeUserSettings(credentials);
   // we do not call the public ddl script, as this should only run once on database initialization
   // const ddlPublicTemplate = fs.readFileSync(path.join(__dirname, '../../database/pgsql-public-ddl.sql'), 'utf8');
   const ddlUserTemplate = fs.readFileSync(path.join(__dirname, '../../database/pgsql-user-ddl.sql'), 'utf8');
   const dmlTemplate = fs.readFileSync(path.join(__dirname, '../../database/pgsql-demo-dml.sql'), 'utf8');
-  const parameters = '';
   try {
     await client.query('BEGIN');
-    logSqlStatement(sqlInsertCredentials, parameters);
-    await client.query(sqlInsertCredentials, parameters);
-    logSqlStatement(sqlInsertSettingsForNewUser, parameters);
-    await client.query(sqlInsertSettingsForNewUser, parameters);
-    logSqlStatement(sqlVerifyCredentials, parameters);
-    const result = await client.query(sqlVerifyCredentials, parameters);
+
+    logSqlStatement(queryInsertCredentials.text, queryInsertCredentials.values);
+    await client.query(queryInsertCredentials.text, queryInsertCredentials.values);
+    logSqlStatement(queryInsertSettingsForNewUser.text, queryInsertSettingsForNewUser.values);
+    await client.query(queryInsertSettingsForNewUser);
+    logSqlStatement(queryVerifyCredentials.text, queryVerifyCredentials.values);
+    const result = await client.query(queryVerifyCredentials);
     const results = { results: result ? result.rows : null };
     const userSchema = result?.rows[0]?.userschema;
     const userName = result?.rows[0]?.username;
@@ -95,8 +96,8 @@ const createUserCredentialsAndSchema = asyncHandler(async (request: Request, res
       await client.query(dmlTemplate);
       logger.info(`Populated schema [${userSchema}] for user [${credentials.username}] with demo data.`);
     }
-    logSqlStatement(sqlReceiveUserSchemaTableCount, parameters);
-    const userSchemaTableCount = await client.query(sqlReceiveUserSchemaTableCount);
+    logSqlStatement(queryReceiveUserSchemaTableCount.text, queryReceiveUserSchemaTableCount.values);
+    const userSchemaTableCount = await client.query(queryReceiveUserSchemaTableCount);
     if (userSchemaTableCount.rows && userSchemaTableCount.rows.length > 0 && userSchemaTableCount.rows[0].table_count) {
       logger.info(
         `Created #${userSchemaTableCount.rows[0].table_count} tables in [${userSchema}] for user [${credentials.username}]`

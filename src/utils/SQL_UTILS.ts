@@ -27,15 +27,19 @@ const escapeSingleQuotes = (str: string) => {
 /**
  * @description constructs INSERT INTO statement for credential storage
  * @param {*} param0 json object containing username, email, schema and password keys
+ * @param {string} userSchema username concat onto 'private_' string
  * @returns INSERT INTO SQL for public.um_users
  */
-const buildInsertUmUsers = ({ username, email, password }: UserCredentials) => {
-  return `INSERT INTO public.um_users (username, email, password, schema) VALUES (
-    '${username}',
-    '${email}',
-    crypt('${password}', gen_salt('bf',12)),
-    'private_${username.toLowerCase()}'
-  );`;
+const buildInsertUmUsers = ({ username, email, password }: UserCredentials, userSchema: string): ParameterizedQuery => {
+  return {
+    text: `INSERT INTO public.um_users (username, email, password, schema) VALUES (
+    $1,
+    $2,
+    crypt($3, gen_salt('bf',12)),
+    $4
+  );`,
+    values: [username, email ? email : '', password, userSchema]
+  };
 };
 
 /**
@@ -54,47 +58,52 @@ const buildVerifyUsername = ({ username, password }: UserCredentials): Parameter
       FROM public.um_users
       WHERE username = $1
         AND password = crypt($2, password);`,
-    values: [username, password],
+    values: [username, password]
   };
 };
 
-const buildVerifyUserSchemaTableCount = ({ username }: UserCredentials) => {
-  return `SELECT
+const buildVerifyUserSchemaTableCount = (userSchema: string): ParameterizedQuery => {
+  return {
+    text: `SELECT
     schemaname, COUNT(tablename) as table_count
 FROM pg_catalog.pg_tables
-where schemaname = 'private_${username}'
-group by schemaname`;
+where schemaname = $1
+group by schemaname`,
+    values: [userSchema]
+  };
 };
 
 /**
  * inserts default values for various user settings after new account creation
- * @param {*} param0 json object containing username, email and password keys
+ * @param {*} param0 json object containing username
  * @returns INSERT INTO statements for um_user_settings
  */
-const buildInitializeUserSettings = ({ username }: UserCredentials) => {
-  return `
+const buildInitializeUserSettings = ({ username }: UserCredentials): ParameterizedQuery => {
+  return {
+    text: `
   INSERT INTO public.um_user_settings(
     user_id, setting_key, setting_value, setting_description)
-    VALUES (
-        (SELECT id FROM public.um_users WHERE username = '${username}'),
-        'selected_mode',
-        'light',
-        null);
-  INSERT INTO public.um_user_settings(
-    user_id, setting_key, setting_value, setting_description)
-    VALUES (
-        (SELECT id FROM public.um_users WHERE username = '${username}'),
-        'selected_palette',
-        'default',
-        null);
-  INSERT INTO public.um_user_settings(
-    user_id, setting_key, setting_value, setting_description)
-    VALUES (
-        (SELECT id FROM public.um_users WHERE username = '${username}'),
-        'selected_language',
-        'en_US',
-        null);
-    `;
+    VALUES
+        (
+          (SELECT id FROM public.um_users WHERE username = $1),
+          'selected_mode',
+          'light',
+          null
+        ),
+        (
+          (SELECT id FROM public.um_users WHERE username = $1),
+          'selected_palette',
+          'default',
+          null
+        ),
+        (
+          (SELECT id FROM public.um_users WHERE username = $1),
+          'selected_language',
+          'en_US',
+          null
+        );`,
+    values: [username]
+  };
 };
 
 /**
@@ -103,7 +112,6 @@ const buildInitializeUserSettings = ({ username }: UserCredentials) => {
  * @returns SELECT FROM SQL for public.um_users
  */
 const buildFindUserById = (id: number): ParameterizedQuery => {
-
   return {
     text: `SELECT
     id as userid,
@@ -112,7 +120,7 @@ const buildFindUserById = (id: number): ParameterizedQuery => {
     schema as userschema
   FROM public.um_users
   WHERE id = $1;`,
-    values: [id],
+    values: [id]
   };
 };
 

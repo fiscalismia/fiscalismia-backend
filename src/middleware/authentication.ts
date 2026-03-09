@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
-const { buildFindUserById,logSqlStatement } = require('../utils/SQL_UTILS');
+const { buildFindUserById, logSqlStatement } = require('../utils/SQL_UTILS');
 require('dotenv').config();
 const { pool } = require('../utils/pgDbService');
 import { Request, Response } from 'express';
@@ -25,7 +25,7 @@ const authenticateUser = asyncHandler(async (request: Request, response: Respons
       token = request.headers.authorization.split(' ')[1];
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
       const user = decodedToken?.user;
-      const query : ParameterizedQuery = buildFindUserById(user?.userId);
+      const query: ParameterizedQuery = buildFindUserById(user?.userId);
       logSqlStatement(query.text, query.values);
       const result = await client.query(query);
       if (result.rowCount != 1) {
