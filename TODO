@@ -1,23 +1,18 @@
 # Todo List for [Fiscalismia Backend]
 
-## Unfinished Tasks
-
 ### High Prio
-- check my node_env isnt working on demo container and where the env var is
-- Evaluate if ssl can be used for demo development database setting ssl = true
+- Limit access to Admin Panel Menu to jwt-session token content via backend check
+- fix XSS in TSV input send commands by using e.g. pg-format
 
 ### Medium Prio
-- Limit access to Admin Panel Menu to jwt-session token content via backend check
+- Evaluate if ssl can be used for demo development database setting ssl = true
 - Rethink localbrowser storage evaluation, especially in regards to loginUserName, to prohibit forgery
+
+### Low Prio
 - Add POST Route for Variable Expenses Staging
 - Add Supertest for evaluation of this post route and the ETL process
 
-### Low Prio
-### Before Deploying
-- Rethink public folder storage for production env -> Persistence with backup / HA
-- reenable snyk static code analysis & dependency analysis and fix blatant security errors
-- - Replace all SQL interpolation code with parameterized queries which automatically sanitize for SQL Injection
-
-### Post Deployment
+### Post DEMO Deployment
 - check the `app.set('trust proxy', 1) setting` in production by hitting the api/ip endpoint to find out of the ip address of the X-Forwarded-For header matches the actual ip address or that of a reverse proxy or load balancer
 - Migrate away from dotenv. Dotenv maintainer is being an asshole - use --env-file=.env for node and --node-args='--env-file=.env' for nodemon and NODE_OPTIONS='--env-file=.env'
+- Rethink public folder storage for production env -> Persistence remote with backup / HA
