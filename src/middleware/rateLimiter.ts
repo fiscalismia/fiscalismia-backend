@@ -63,10 +63,20 @@ const imageRetrievalRateLimiter = rateLimit({
 });
 
 /**
+ * @description Limits image deletion and addition
+ */
+const multerPostDeleteRateLimiter = rateLimit({
+  ...standardOptions,
+  max: 60 * config.RATE_LIMIT_MULTIPLICATOR,
+  message:
+    'Image upload / delete rate exceeded. Try again in 15 minutes or ask your administrator to increase this limit.'
+});
+
+/**
  * @description A more lenient limiter for authenticated users.
  * This limiter is dynamic:
- * - For GET requests (reading data), it allows 300 requests per 15 minutes.
- * - For other methods (POST, PUT, DELETE), it allows 100 requests per 15 minutes.
+ * - For GET requests (reading data), it allows 1200 requests per 15 minutes.
+ * - For other methods (POST, PUT, DELETE), it allows 60 requests per 15 minutes.
  */
 const authenticatedRateLimiter = rateLimit({
   ...standardOptions,
@@ -76,7 +86,7 @@ const authenticatedRateLimiter = rateLimit({
     } else if (req.method === 'GET' && !isProdEnvironment) {
       return 2400 * config.RATE_LIMIT_MULTIPLICATOR;
     }
-    return isProdEnvironment ? 90 * config.RATE_LIMIT_MULTIPLICATOR : 360 * config.RATE_LIMIT_MULTIPLICATOR;
+    return isProdEnvironment ? 60 * config.RATE_LIMIT_MULTIPLICATOR : 360 * config.RATE_LIMIT_MULTIPLICATOR;
   },
   message:
     'Authenticated route rate limit exceeded. Try again in 15 minutes or ask your administrator to increase this limit.'
@@ -85,6 +95,7 @@ const authenticatedRateLimiter = rateLimit({
 module.exports = {
   rootUrlRateLimiter,
   databaseHealthCheckRateLimiter,
+  multerPostDeleteRateLimiter,
   unauthenticatedRateLimiter,
   imageRetrievalRateLimiter,
   genericFallbackRateLimiter,

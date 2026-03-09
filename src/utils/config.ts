@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const isProd = process.env.NODE_ENV === 'production';
 const isDemo = process.env.NODE_ENV === 'demo';
+const UPLOAD_IMG_RELATIVE_DIR = './public/img/uploads';
 const PUBLIC_FRONTEND_DOMAIN = 'fiscalismia.com';
 const PUBLIC_DEMO_FRONTEND_DOMAIN = 'demo.fiscalismia.com';
 const PUBLIC_BACKEND_DOMAIN = 'backend.fiscalismia.com';
@@ -26,6 +27,7 @@ const RATE_LIMIT_MULTIPLICATOR = process.env.NODE_ENV === 'test' ? 1000 : 1; // 
 module.exports = {
   PUBLIC_FRONTEND_DOMAIN,
   PUBLIC_DEMO_FRONTEND_DOMAIN,
+  UPLOAD_IMG_RELATIVE_DIR,
   ROOT_URL,
   API_ADDRESS,
   SERVER_ADDRESS,

@@ -20,8 +20,12 @@ const postFoodItemImg = asyncHandler(async (request: Request, response: Response
   logger.http('multerController received POST to /api/fiscalismia/upload/food_item_img');
   try {
     if (request.file?.path) {
-      // Replaces backslash with forward slash
       const id: number = request.body?.id;
+      if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+        response.status(422); // Unprocessable Content
+        throw new Error('id request param should be a positive integer.');
+      }
+      // Replaces backslash with forward slash
       const filePath: string = request.file.path.replace(/\\/g, '/');
       const query = buildInsertFoodItemImgFilePath(id, filePath);
       const client = await pool.connect();
@@ -106,23 +110,35 @@ const getFoodItemImg = asyncHandler(async (request: Request, response: Response,
  */
 const deleteFoodItemImg = asyncHandler(async (request: Request, response: Response) => {
   logger.http('multerController received DELETE to /api/fiscalismia/public/img/uploads/' + request.params.id);
-  const sql = 'DELETE FROM food_price_image_location WHERE food_prices_dimension_key = $1 RETURNING filepath';
+  if (!request.params.id || !Number.isInteger(Number(request.params.id)) || Number(request.params.id) <= 0) {
+    response.status(422); // Unprocessable Content
+    throw new Error('id request param should be a positive integer.');
+  }
+  const query = 'DELETE FROM food_price_image_location WHERE food_prices_dimension_key = $1 RETURNING filepath';
   const parameters = [request.params.id];
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const result = await client.query(sql, parameters);
+    const result = await client.query(query, parameters);
+    const results = { results: result ? result.rows : null };
     if (result.rows[0]?.filepath) {
-      const results = { results: result ? result.rows : null };
-      fs.unlink(result.rows[0].filepath, (err: unknown) => {
-        if (err instanceof Error) {
-          logger.error('Server Filesystem Image deletion failed');
-        } else {
-          logger.info(`${result.rows[0].filepath} was successfully DELETED.`);
-        }
-      });
+      const filepath: string = result.rows[0].filepath;
+
+      // Path traversal validation: resolve collapses ../ segments into a real absolute path.
+      // Then we verify the result still lives inside the allowed upload directory.
+      const allowedBaseDir = path.resolve(config.UPLOAD_IMG_RELATIVE_DIR);
+      const resolvedPath = path.resolve(filepath);
+      if (!resolvedPath.startsWith(allowedBaseDir + path.sep)) {
+        logger.error(
+          `Path traversal attempt blocked in DELETE for id [${request.params.id}], resolved: ${resolvedPath}`
+        );
+        response.status(400);
+        throw new Error('Filepath does not resolve to the expected upload directory.');
+      }
+      await fs.promises.unlink(resolvedPath);
+      logger.info(`${resolvedPath} was successfully DELETED.`);
       await client.query('COMMIT');
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
       throw Error('Deletion query has not returned expected deleted filepath variable from db.');
     }
