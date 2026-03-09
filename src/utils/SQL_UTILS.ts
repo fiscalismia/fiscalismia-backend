@@ -1,4 +1,5 @@
 const logger = require('./logger');
+const format = require('pg-format');
 import {
   UserCredentials,
   StagingVariableBills,
@@ -9,20 +10,6 @@ import {
   ParameterizedQuery
 } from './customTypes';
 
-/**
- * @description replaces all occurences of single quote ' with two single quotes ''
- * @param {*} str
- * @returns escaped string unless the string contains multiple sequential single quotes
- */
-const escapeSingleQuotes = (str: string) => {
-  // eslint-disable-next-line quotes
-  const doubleQuote = "''";
-  if (str.includes(doubleQuote)) {
-    logger.error('double single quotes present. no escaping performed.');
-    throw new Error('Double quotes present on DB INSERT of VARCHAR --> data inconsistency disallowed');
-  }
-  return str.replace(/'/g, doubleQuote);
-};
 
 /**
  * @description constructs INSERT INTO statement for credential storage
@@ -133,27 +120,21 @@ const buildFindUserById = (id: number): ParameterizedQuery => {
  * @returns INSERT INTO SQL for staging_variable_bills
  */
 const buildInsertStagingVariableBills = (e: StagingVariableBills) => {
-  // loops through keys of json object and sanitizes inputs
-  for (const keyname in e) {
-    if (typeof e[keyname] === 'string' && !keyname.includes('date')) {
-      e[keyname] = escapeSingleQuotes(String(e[keyname]));
-    }
-  }
-
-  // replaced € in cost with empty string
-  // replaced , in cost with empty string as it is a thousand separator
-  const insertRow = `INSERT INTO staging_variable_bills (description, category, store, cost, purchasing_date, is_planned, contains_indulgence, sensitivities)
+  const insertRow = format(
+    `INSERT INTO staging_variable_bills (description, category, store, cost, purchasing_date, is_planned, contains_indulgence, sensitivities)
       VALUES (
-        '${e.description}',
-        INITCAP('${e.category}'),
-        INITCAP('${e.store}'),
-        ${e.cost},
-        TO_DATE('${e.purchasing_date}','DD.MM.YYYY'),
-        '${e.is_planned}',
-        '${e.contains_indulgence}',
-        LOWER('${e.sensitivities}')
+        %L,
+        INITCAP(%L),
+        INITCAP(%L),
+        %s,
+        TO_DATE(%L,'DD.MM.YYYY'),
+        %L,
+        %L,
+        LOWER(%L)
       );
-      `;
+      `,
+    e.description, e.category, e.store, e.cost, e.purchasing_date, e.is_planned, e.contains_indulgence, e.sensitivities
+  );
   return insertRow;
 };
 
@@ -166,24 +147,20 @@ const buildInsertStagingVariableBills = (e: StagingVariableBills) => {
  * @returns INSERT INTO SQL for fixed_costs
  */
 const buildInsertFixedCosts = (e: FixedCosts) => {
-  // loops through keys of json object and sanitizes inputs
-  for (const keyname in e) {
-    if (typeof e[keyname] === 'string' && !keyname.includes('date')) {
-      e[keyname] = escapeSingleQuotes(String(e[keyname]));
-    }
-  }
-
-  const insertRow = `INSERT INTO fixed_costs (category, description, monthly_interval, billed_cost, monthly_cost, effective_date, expiration_date)
+  const insertRow = format(
+    `INSERT INTO fixed_costs (category, description, monthly_interval, billed_cost, monthly_cost, effective_date, expiration_date)
       VALUES (
-        '${e.category}',
-        '${e.description}',
-        ${e.monthly_interval},
-        ${e.billed_cost},
-        ${e.monthly_cost},
-        TO_DATE('${e.effective_date}','DD.MM.YYYY'),
-        TO_DATE('${e.expiration_date}','DD.MM.YYYY')
+        %L,
+        %L,
+        %s,
+        %s,
+        %s,
+        TO_DATE(%L,'DD.MM.YYYY'),
+        TO_DATE(%L,'DD.MM.YYYY')
       );
-      `;
+      `,
+    e.category, e.description, e.monthly_interval, e.billed_cost, e.monthly_cost, e.effective_date, e.expiration_date
+  );
   return insertRow;
 };
 
@@ -196,22 +173,19 @@ const buildInsertFixedCosts = (e: FixedCosts) => {
  * @returns INSERT INTO SQL for fixed_income
  */
 const buildInsertFixedIncome = (e: FixedIncome) => {
-  // loops through keys of json object and sanitizes inputs
-  for (const keyname in e) {
-    if (typeof e[keyname] === 'string' && !keyname.includes('date')) {
-      e[keyname] = escapeSingleQuotes(String(e[keyname]));
-    }
-  }
-  const insertRow = `INSERT INTO fixed_income (description, type, monthly_interval, value, effective_date, expiration_date)
+  const insertRow = format(
+    `INSERT INTO fixed_income (description, type, monthly_interval, value, effective_date, expiration_date)
       VALUES (
-        '${e.description}',
-        '${e.type}',
-        ${e.monthly_interval},
-        ${e.value},
-        TO_DATE('${e.effective_date}','DD.MM.YYYY'),
-        TO_DATE('${e.expiration_date}','DD.MM.YYYY')
+        %L,
+        %L,
+        %s,
+        %s,
+        TO_DATE(%L,'DD.MM.YYYY'),
+        TO_DATE(%L,'DD.MM.YYYY')
       );
-      `;
+      `,
+    e.description, e.type, e.monthly_interval, e.value, e.effective_date, e.expiration_date
+  );
   return insertRow;
 };
 
@@ -224,43 +198,43 @@ const buildInsertFixedIncome = (e: FixedIncome) => {
  * @returns INSERT INTO SQL for investments
  */
 const buildInsertInvestments = (e: InvestmentAndTaxes) => {
-  // loops through keys of json object and sanitizes inputs
-  for (const keyname in e) {
-    if (typeof e[keyname] === 'string' && !keyname.includes('date')) {
-      e[keyname] = escapeSingleQuotes(String(e[keyname]));
-    }
-  }
-  const insertRow = `INSERT INTO investments (execution_type,	description,	isin,	investment_type,	marketplace,	units,	price_per_unit,	total_price,	fees,	execution_date)
+  let insertRow = format(
+    `INSERT INTO investments (execution_type,	description,	isin,	investment_type,	marketplace,	units,	price_per_unit,	total_price,	fees,	execution_date)
       VALUES (
-        '${e.execution_type}',
-        '${e.description}',
-        '${e.isin}',
-        '${e.investment_type}',
-        '${e.marketplace}',
-        ${e.units},
-        ${e.price_per_unit},
-        ${e.total_price},
-        ${e.fees},
-        TO_DATE('${e.execution_date}','DD.MM.YYYY')
+        %L,
+        %L,
+        %L,
+        %L,
+        %L,
+        %s,
+        %s,
+        %s,
+        %s,
+        TO_DATE(%L,'DD.MM.YYYY')
       );
-${
-  e.execution_type === 'sell'
-    ? `INSERT INTO investment_taxes (investment_id, pct_of_profit_taxed, profit_amt, tax_paid, tax_year)
+`,
+    e.execution_type, e.description, e.isin, e.investment_type, e.marketplace, e.units, e.price_per_unit, e.total_price, e.fees, e.execution_date
+  );
+  if (e.execution_type === 'sell') {
+    const taxPaid = (((e.profit_amt! * e.pct_of_profit_taxed!) / 100) * Number(0.26375)).toFixed(2);
+    insertRow += format(
+      `INSERT INTO investment_taxes (investment_id, pct_of_profit_taxed, profit_amt, tax_paid, tax_year)
       (
         SELECT
           id,
-          ${e.pct_of_profit_taxed},
-          ${e.profit_amt},
-          ${(((e.profit_amt! * e.pct_of_profit_taxed!) / 100) * Number(0.26375)).toFixed(2)},
-          extract( year FROM TO_DATE('${e.execution_date}','DD.MM.YYYY') )::int
+          %s,
+          %s,
+          %s,
+          extract( year FROM TO_DATE(%L,'DD.MM.YYYY') )::int
         FROM investments
-        WHERE isin = '${e.isin}'
-          AND execution_date = TO_DATE('${e.execution_date}','DD.MM.YYYY')
-          AND execution_type = '${e.execution_type}' --unique key of investments
+        WHERE isin = %L
+          AND execution_date = TO_DATE(%L,'DD.MM.YYYY')
+          AND execution_type = %L --unique key of investments
       );
-`
-    : ''
-}`;
+`,
+      e.pct_of_profit_taxed, e.profit_amt, taxPaid, e.execution_date, e.isin, e.execution_date, e.execution_type
+    );
+  }
   return insertRow;
 };
 
@@ -273,27 +247,24 @@ ${
  * @returns INSERT INTO SQL for table_food_prices
  */
 const buildInsertNewFoodItems = (e: FoodItem) => {
-  // loops through keys of json object and sanitizes inputs
-  for (const keyname in e) {
-    if (typeof e[keyname] === 'string' && !keyname.includes('date')) {
-      e[keyname] = escapeSingleQuotes(String(e[keyname]));
-    }
-  }
-  const insertRow = `INSERT INTO table_food_prices (dimension_key, food_item, brand, store, main_macro, kcal_amount, weight, price, last_update, effective_date, expiration_date)
+  const insertRow = format(
+    `INSERT INTO table_food_prices (dimension_key, food_item, brand, store, main_macro, kcal_amount, weight, price, last_update, effective_date, expiration_date)
       VALUES (
         nextval('table_food_prices_seq'),
-        '${e.food_item}',
-        '${e.brand}',
-        '${e.store}',
-        '${e.main_macro}',
-        ${e.kcal_amount},
-        ${e.weight},
-        ${e.price},
-        TO_DATE('${e.last_update}','DD.MM.YYYY'),
+        %L,
+        %L,
+        %L,
+        %L,
+        %s,
+        %s,
+        %s,
+        TO_DATE(%L,'DD.MM.YYYY'),
         current_date,
         TO_DATE('01.01.4000','DD.MM.YYYY')
       );
-      `;
+      `,
+    e.food_item, e.brand, e.store, e.main_macro, e.kcal_amount, e.weight, e.price, e.last_update
+  );
   return insertRow;
 };
 

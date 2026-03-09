@@ -434,7 +434,7 @@ const postVariableExpensesTextTsv = asyncHandler(async (request: Request, respon
     logger.debug(
       `received tsv-data from body with [${request.body ? result.length : 0}] rows and transformed into [${insertCount}] INSERT STATEMENTS`
     );
-    response.status(200).send(insertStatements);
+    response.status(200).type('text/plain').send(insertStatements);
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {
@@ -498,7 +498,7 @@ const postFixedCostsTextTsv = asyncHandler(async (request: Request, response: Re
     logger.debug(
       `received tsv-data from body with [${request.body ? result.length : 0}] rows and transformed into [${insertCount}] INSERT STATEMENTS`
     );
-    response.status(200).send(insertStatements);
+    response.status(200).type('text/plain').send(insertStatements);
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {
@@ -550,7 +550,7 @@ const postIncomeTextTsv = asyncHandler(async (request: Request, response: Respon
     logger.debug(
       `received tsv-data from body with [${request.body ? result.length : 0}] rows and transformed into [${insertCount}] INSERT STATEMENTS`
     );
-    response.status(200).send(insertStatements);
+    response.status(200).type('text/plain').send(insertStatements);
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {
@@ -633,7 +633,7 @@ const postInvestmentsTextTsv = asyncHandler(async (request: Request, response: R
     logger.debug(
       `received tsv-data from body with [${request.body ? result.length : 0}] rows and transformed into [${insertCount}] INSERT STATEMENTS`
     );
-    response.status(200).send(insertStatements);
+    response.status(200).type('text/plain').send(insertStatements);
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {
@@ -696,7 +696,7 @@ const postNewFoodItemsTextTsv = asyncHandler(async (request: Request, response: 
     logger.debug(
       `received tsv-data from body with [${request.body ? result.length : 0}] rows and transformed into [${insertCount}] INSERT STATEMENTS`
     );
-    response.status(200).send(insertStatements);
+    response.status(200).type('text/plain').send(insertStatements);
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {

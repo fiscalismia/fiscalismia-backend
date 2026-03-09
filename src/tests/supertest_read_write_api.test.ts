@@ -1221,7 +1221,7 @@ function postTsvAndReceiveInsertStmt(
     .send(exampleTsv)
     .set('Authorization', 'Bearer ' + authToken)
     .set('Content-Type', 'text/plain')
-    .expect('Content-Type', expectError ? /json/ : /html/)
+    .expect('Content-Type', expectError ? /json/ : /text\/plain/)
     .expect(expectError ? 400 : 200)
     .end((err: unknown, res: request.Response) => {
       if (err instanceof Error) return done(err);
