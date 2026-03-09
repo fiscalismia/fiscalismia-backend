@@ -21,21 +21,15 @@ const postFoodItemImg = asyncHandler(async (request: Request, response: Response
   try {
     if (request.file?.path) {
       // Replaces backslash with forward slash
-      const filePath = request.file.path.replace(/\\/g, '/');
-      const element = {
-        id: request.body?.id,
-        filepath: filePath
-      };
-      const sql = buildInsertFoodItemImgFilePath(element);
-      const parameters = '';
+      const id: number = request.body?.id;
+      const filePath: string = request.file.path.replace(/\\/g, '/');
+      const query = buildInsertFoodItemImgFilePath(id, filePath);
       const client = await pool.connect();
       try {
-        logSqlStatement(sql, parameters);
-        const result = await client.query(sql, parameters);
+        logSqlStatement(query.text, query.values);
+        const result = await client.query(query);
         if (result.rowCount == 1) {
-          logger.info(
-            `file successfully persisted in db for food item with id [${element.id}] in filepath: ' ${element.filepath} `
-          );
+          logger.info(`file successfully persisted in db for food item with id [${id}] in filepath: ' ${filePath} `);
           response.status(200).send(filePath);
         } else {
           const errorMsg = 'Food item was not persisted successfully';

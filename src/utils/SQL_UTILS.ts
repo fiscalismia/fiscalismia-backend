@@ -300,19 +300,20 @@ const buildInsertNewFoodItems = (e: FoodItem) => {
 /**
  * UPSERT STATEMENT Inserting or Updating an image filepath after the
  * image corresponding to a food item with the id element.id has been stored on the server
- * @param {*} element object containing id and filepath fields
+ * @param id
+ * @param filePath
  * @returns UPSERT Statement
  */
-const buildInsertFoodItemImgFilePath = (element: any) => {
-  const dimensionKey = element.id;
-  const filepath = element.filepath;
-  const insertFilePath = `INSERT INTO food_price_image_location
+const buildInsertFoodItemImgFilePath = (id: number, filePath: string): ParameterizedQuery => {
+  return {
+    text: `INSERT INTO food_price_image_location
     (food_prices_dimension_key, filepath)
-    VALUES ('${dimensionKey}','${filepath}')
+    VALUES ($1, $2)
     ON CONFLICT ON CONSTRAINT food_price_filepaths_pkey
     DO
-      UPDATE SET filepath = EXCLUDED.filepath;`;
-  return insertFilePath;
+      UPDATE SET filepath = EXCLUDED.filepath;`,
+    values: [id, filePath]
+  };
 };
 
 /**
