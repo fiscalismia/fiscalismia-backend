@@ -43,7 +43,7 @@ const deleteTestData = asyncHandler(async (request: Request, response: Response)
     const result = await client.query(sql, parameters);
     await client.query('COMMIT');
     const results = { results: result ? result.rows : null };
-    response.status(200).send(results);
+    response.status(200).json(results);
   } catch (error: unknown) {
     await client.query('ROLLBACK');
     response.status(500);
@@ -79,7 +79,7 @@ const deleteFoodItem = asyncHandler(async (request: Request, response: Response)
         logger.info('Successfully deleted food item with id: [' + e.id + ']');
       });
       await client.query('COMMIT');
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
       throw new Error('DELETE Food Item SQL has not returned the deleted id.');
     }
@@ -120,7 +120,7 @@ const deleteFoodItemDiscount = asyncHandler(async (request: Request, response: R
         logger.info('Successfully deleted food item discount with id: [' + e.id + ']');
       });
       await client.query('COMMIT');
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
       throw new Error('DELETE Food Item Discount SQL has not returned the deleted id.');
     }
@@ -172,7 +172,7 @@ const deleteInvestment = asyncHandler(async (request: Request, response: Respons
       logger.info('Successfully deleted investment with id: [' + deleteInvestmentResult.rows[0].id + ']');
       await client.query('COMMIT');
       const results = { results: deleteInvestmentResult ? deleteInvestmentResult.rows : null };
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
       throw new Error('DELETE Investment SQL has not returned the deleted id.');
     }
@@ -242,7 +242,7 @@ const deleteInvestmentDividend = asyncHandler(async (request: Request, response:
       logger.info('Successfully deleted dividend with id: [' + deleteInvestmentResult.rows[0].id + ']');
       await client.query('COMMIT');
       const results = { results: deleteInvestmentResult ? deleteInvestmentResult.rows : null };
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
       throw new Error('DELETE Dividend SQL has not returned the deleted id.');
     }

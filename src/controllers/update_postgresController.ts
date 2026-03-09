@@ -31,9 +31,9 @@ const updateTestData = asyncHandler(async (request: Request, response: Response)
     await client.query('COMMIT');
     const results = { results: result?.rows ? result.rows : null };
     if (result.rowCount > 0) {
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
-      response.status(204).send(`id ${request.params.id} not found. Nothing has been updated`);
+      response.status(204).json({ results: `id ${request.params.id} not found. Nothing has been updated` });
     }
   } catch (error: unknown) {
     await client.query('ROLLBACK');
@@ -55,14 +55,14 @@ const updateTestData = asyncHandler(async (request: Request, response: Response)
  */
 const updateFoodItemPrice = asyncHandler(async (request: Request, response: Response) => {
   logger.http('update_postgresController received PUT to /api/fiscalismia/food_item/price/' + request.params.id);
-  const sql =
+  const query =
     'UPDATE table_food_prices SET price = $1, last_update = $2 WHERE dimension_key = $3 RETURNING dimension_key as id, price::double precision';
   const parameters = [request.body.price, request.body.lastUpdate, request.params.id];
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    logSqlStatement(sql, parameters);
-    const result = await client.query(sql, parameters);
+    logSqlStatement(query, parameters);
+    const result = await client.query(query, parameters);
     await client.query('COMMIT');
     const results = { results: result?.rows ? result.rows : null };
     if (result.rowCount > 0) {
@@ -73,9 +73,9 @@ const updateFoodItemPrice = asyncHandler(async (request: Request, response: Resp
           result.rows[0].price +
           '€'
       );
-      response.status(200).send(results);
+      response.status(200).json(results);
     } else {
-      response.status(204).send(`id ${request.params.id} not found. Nothing has been updated`);
+      response.status(204).json({ results: `id ${request.params.id} not found. Nothing has been updated` });
     }
   } catch (error: unknown) {
     await client.query('ROLLBACK');
