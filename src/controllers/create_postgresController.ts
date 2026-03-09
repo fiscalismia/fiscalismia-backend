@@ -745,7 +745,7 @@ const loginWithUserCredentials = asyncHandler(async (request: Request, response:
       userSchema: results.rows[0]?.userschema
     };
     const jwtToken = generateToken(user);
-    response.status(200).send(jwtToken);
+    response.status(200).json({ token: jwtToken });
   } catch (error: unknown) {
     response.status(400);
     if (error instanceof Error) {

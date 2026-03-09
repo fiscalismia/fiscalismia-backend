@@ -285,14 +285,14 @@ describe('supertest REST API testing entire REST functionality', () => {
         username: username,
         password: password
       })
-      .expect('Content-Type', /html/)
+      .expect('Content-Type', /json/)
       .expect(200)
       .end((err: unknown, res: request.Response) => {
         if (err instanceof Error) {
           return done(err);
         }
         // set local authentication token variable to text of login response
-        authToken = res.text;
+        authToken = res.body.token;
         return done();
       });
   });
