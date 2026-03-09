@@ -724,9 +724,9 @@ const loginWithUserCredentials = asyncHandler(async (request: Request, response:
   }
   const client = await pool.connect();
   const sqlSetSearchPathToPublic = 'SET search_path TO "public"';
-  const query : ParameterizedQuery = buildVerifyUsername(credentials);
+  const query: ParameterizedQuery = buildVerifyUsername(credentials);
   try {
-    logSqlStatement(query.text, query.values);
+    logSqlStatement(query.text, ['CREDENTIALS HIDDEN']);
     await client.query(sqlSetSearchPathToPublic);
     const result = await client.query(query);
     if (result.rowCount != 1) {

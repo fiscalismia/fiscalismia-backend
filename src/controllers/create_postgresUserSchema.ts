@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 const format = require('pg-format');
 const { pool } = require('../utils/pgDbService');
 import { Request, Response } from 'express';
-import { regExAlphaNumeric, regExEmail, usernameRegExp } from '../utils/sharedFunctions';
+import { regExAlphaNumeric, regExEmail, usernameRegExp, usuerSchemaRegExp } from '../utils/sharedFunctions';
 import { ParameterizedQuery, PostgresError } from '../utils/customTypes';
 const {
   buildInsertUmUsers,
@@ -51,7 +51,16 @@ const createUserCredentialsAndSchema = asyncHandler(async (request: Request, res
     response.status(422); // Unprocessable Content
     throw new Error('password must contain alphanumeric characters, hyphens or underscores only!');
   }
-  const userSchemaToInsert = `private_${credentials.username}`;
+  const userSchemaToInsert = `private_${credentials.username.toLowerCase()}`;
+  if (!usuerSchemaRegExp.test(userSchemaToInsert)) {
+    logger.debug(
+      `lowercase username appended to 'private_' did not match the alphanumeric regex pattern ${usuerSchemaRegExp}`
+    );
+    response.status(422); // Unprocessable Content
+    throw new Error(
+      'username must conform to the latin alphabet! Allowed are 3-32 alphanumerical Chracters and underscores!'
+    );
+  }
   const client = await pool.connect();
   const queryInsertCredentials: ParameterizedQuery = buildInsertUmUsers(credentials, userSchemaToInsert);
   const queryVerifyCredentials: ParameterizedQuery = buildVerifyUsername(credentials);
@@ -63,12 +72,11 @@ const createUserCredentialsAndSchema = asyncHandler(async (request: Request, res
   const dmlTemplate = fs.readFileSync(path.join(__dirname, '../../database/pgsql-demo-dml.sql'), 'utf8');
   try {
     await client.query('BEGIN');
-
-    logSqlStatement(queryInsertCredentials.text, queryInsertCredentials.values);
+    logSqlStatement(queryInsertCredentials.text, ['CREDENTIALS HIDDEN']);
     await client.query(queryInsertCredentials.text, queryInsertCredentials.values);
     logSqlStatement(queryInsertSettingsForNewUser.text, queryInsertSettingsForNewUser.values);
     await client.query(queryInsertSettingsForNewUser);
-    logSqlStatement(queryVerifyCredentials.text, queryVerifyCredentials.values);
+    logSqlStatement(queryVerifyCredentials.text, ['CREDENTIALS HIDDEN']);
     const result = await client.query(queryVerifyCredentials);
     const results = { results: result ? result.rows : null };
     const userSchema = result?.rows[0]?.userschema;
@@ -79,13 +87,13 @@ const createUserCredentialsAndSchema = asyncHandler(async (request: Request, res
     if (!userName || userName !== credentials.username) {
       throw new Error('username provided does not match username in database');
     }
-    if (!userSchema || userSchema !== `private_${credentials.username.toLowerCase()}`) {
+    if (!userSchema || userSchema !== userSchemaToInsert) {
       throw new Error(`userschema does not match private_${credentials.username.toLowerCase()} in database`);
     }
     // CREATE USER SCHEMA
     await client.query(format('CREATE SCHEMA IF NOT EXISTS %I AUTHORIZATION fiscalismia_api', userSchema));
     await client.query(format('GRANT ALL ON SCHEMA %I TO fiscalismia_api', userSchema));
-    await client.query(format('SET search_path TO "%I" ', userSchema));
+    await client.query(format('SET search_path TO %I', userSchema));
     logger.info(`User Schema ${userSchema} created and set as search_path for user [${userName}]`);
 
     // EXECUTE DDL STATEMENTS TO INIT DB
