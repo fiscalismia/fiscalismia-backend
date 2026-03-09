@@ -5,7 +5,8 @@ import {
   FixedCosts,
   FixedIncome,
   InvestmentAndTaxes,
-  FoodItem
+  FoodItem,
+  ParameterizedQuery
 } from './customTypes';
 
 /**
@@ -42,16 +43,19 @@ const buildInsertUmUsers = ({ username, email, password }: UserCredentials) => {
  * @param {*} param0 json object containing username, email and password keys
  * @returns SELECT FROM SQL for public.um_users
  */
-const buildVerifyUsername = ({ username, password }: UserCredentials) => {
-  return `
-  SELECT
-    id as userid,
-    username,
-    email as useremail,
-    schema as userschema
-  FROM public.um_users
-  WHERE username = '${username}'
-    AND password = crypt('${password}', password);`;
+const buildVerifyUsername = ({ username, password }: UserCredentials): ParameterizedQuery => {
+  return {
+    text: `
+      SELECT
+        id as userid,
+        username,
+        email as useremail,
+        schema as userschema
+      FROM public.um_users
+      WHERE username = $1
+        AND password = crypt($2, password);`,
+    values: [username, password],
+  };
 };
 
 const buildVerifyUserSchemaTableCount = ({ username }: UserCredentials) => {
@@ -98,15 +102,18 @@ const buildInitializeUserSettings = ({ username }: UserCredentials) => {
  * @param {number} id the user id to be found
  * @returns SELECT FROM SQL for public.um_users
  */
-const buildFindUserById = (id: number) => {
-  return `
-  SELECT
+const buildFindUserById = (id: number): ParameterizedQuery => {
+
+  return {
+    text: `SELECT
     id as userid,
     username,
     email as useremail,
     schema as userschema
   FROM public.um_users
-  WHERE id = ${id};`;
+  WHERE id = $1;`,
+    values: [id],
+  };
 };
 
 /**

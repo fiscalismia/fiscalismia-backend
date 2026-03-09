@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
-const { buildFindUserById } = require('../utils/SQL_UTILS');
+const { buildFindUserById,logSqlStatement } = require('../utils/SQL_UTILS');
 require('dotenv').config();
 const { pool } = require('../utils/pgDbService');
 import { Request, Response } from 'express';
+import { ParameterizedQuery } from '../utils/customTypes';
 
 /**
  * Middleware for user authentication of protected routes
@@ -24,9 +25,9 @@ const authenticateUser = asyncHandler(async (request: Request, response: Respons
       token = request.headers.authorization.split(' ')[1];
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
       const user = decodedToken?.user;
-      const sql = buildFindUserById(user?.userId);
-      const parameters = '';
-      const result = await client.query(sql, parameters);
+      const query : ParameterizedQuery = buildFindUserById(user?.userId);
+      logSqlStatement(query.text, query.values);
+      const result = await client.query(query);
       if (result.rowCount != 1) {
         response.status(401);
         throw new Error(

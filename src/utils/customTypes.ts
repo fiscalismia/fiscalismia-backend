@@ -1,4 +1,13 @@
 /**
+ * In order to avoid SQL Injection attack vectors, we return Parameterized queries.
+ * These are constructed via placeholder syntax with $1 $2 etc.
+ */
+export interface ParameterizedQuery {
+  text: string;
+  values: (string | number)[];
+}
+
+/**
  * @table public.um_users
  * @property {number} userId SELECT id FROM public.um_users
  * @property {string} userName SELECT username FROM public.um_users

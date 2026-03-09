@@ -3,6 +3,7 @@ import {
   FixedIncome,
   FoodItem,
   InvestmentAndTaxes,
+  ParameterizedQuery,
   StagingVariableBills,
   UserSettingObject
 } from '../utils/customTypes';
@@ -331,7 +332,6 @@ const postDividendsAndTaxes = asyncHandler(async (request: Request, response: Re
       try {
         /**
          * pg-format takes a value array and constructs multiple insert statements to be executed in one transaction.
-         * syntax: format('INSERT INTO test_table (id, name) VALUES %L', valueArray)
          */
         const promiseResult = await new Promise((resolve, reject) => {
           logSqlStatement(insertIntoBridgeInvestmentDividends, parametersBridge);
@@ -724,12 +724,11 @@ const loginWithUserCredentials = asyncHandler(async (request: Request, response:
   }
   const client = await pool.connect();
   const sqlSetSearchPathToPublic = 'SET search_path TO "public"';
-  const sql = buildVerifyUsername(credentials);
-  const parameters = '';
+  const query : ParameterizedQuery = buildVerifyUsername(credentials);
   try {
-    logSqlStatement(sql, parameters);
+    logSqlStatement(query.text, query.values);
     await client.query(sqlSetSearchPathToPublic);
-    const result = await client.query(sql, parameters);
+    const result = await client.query(query);
     if (result.rowCount != 1) {
       response.status(400);
       throw new Error(`Login failed. SELECT to verify user credentials returns rowcount of [${result.rowCount}]`);
