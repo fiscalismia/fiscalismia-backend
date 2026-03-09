@@ -30,7 +30,7 @@ const postFoodItemImg = asyncHandler(async (request: Request, response: Response
         const result = await client.query(query);
         if (result.rowCount == 1) {
           logger.info(`file successfully persisted in db for food item with id [${id}] in filepath: ' ${filePath} `);
-          response.status(200).send(filePath);
+          response.status(200).json({ filepath: filePath });
         } else {
           const errorMsg = 'Food item was not persisted successfully';
           logger.error(errorMsg);
