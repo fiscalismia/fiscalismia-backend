@@ -24,8 +24,16 @@ const {
  */
 const createUserCredentialsAndSchema = asyncHandler(async (request: Request, response: Response) => {
   logger.http('create_postgresController received POST to /api/fiscalismia/um/credentials');
+  if (
+    typeof request.body.username !== 'string' ||
+    typeof request.body.email !== 'string' ||
+    typeof request.body.password !== 'string'
+  ) {
+    response.status(400);
+    throw new Error('username, email and password must be strings');
+  }
   const credentials = {
-    username: request.body.username?.toLowerCase(),
+    username: request.body.username.toLowerCase(),
     email: request.body.email,
     password: request.body.password
   };

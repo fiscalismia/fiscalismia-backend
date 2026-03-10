@@ -10,7 +10,6 @@ import {
   ParameterizedQuery
 } from './customTypes';
 
-
 /**
  * @description constructs INSERT INTO statement for credential storage
  * @param {*} param0 json object containing username, email, schema and password keys
@@ -133,7 +132,14 @@ const buildInsertStagingVariableBills = (e: StagingVariableBills) => {
         LOWER(%L)
       );
       `,
-    e.description, e.category, e.store, e.cost, e.purchasing_date, e.is_planned, e.contains_indulgence, e.sensitivities
+    e.description,
+    e.category,
+    e.store,
+    e.cost,
+    e.purchasing_date,
+    e.is_planned,
+    e.contains_indulgence,
+    e.sensitivities
   );
   return insertRow;
 };
@@ -159,7 +165,13 @@ const buildInsertFixedCosts = (e: FixedCosts) => {
         TO_DATE(%L,'DD.MM.YYYY')
       );
       `,
-    e.category, e.description, e.monthly_interval, e.billed_cost, e.monthly_cost, e.effective_date, e.expiration_date
+    e.category,
+    e.description,
+    e.monthly_interval,
+    e.billed_cost,
+    e.monthly_cost,
+    e.effective_date,
+    e.expiration_date
   );
   return insertRow;
 };
@@ -184,7 +196,12 @@ const buildInsertFixedIncome = (e: FixedIncome) => {
         TO_DATE(%L,'DD.MM.YYYY')
       );
       `,
-    e.description, e.type, e.monthly_interval, e.value, e.effective_date, e.expiration_date
+    e.description,
+    e.type,
+    e.monthly_interval,
+    e.value,
+    e.effective_date,
+    e.expiration_date
   );
   return insertRow;
 };
@@ -213,7 +230,16 @@ const buildInsertInvestments = (e: InvestmentAndTaxes) => {
         TO_DATE(%L,'DD.MM.YYYY')
       );
 `,
-    e.execution_type, e.description, e.isin, e.investment_type, e.marketplace, e.units, e.price_per_unit, e.total_price, e.fees, e.execution_date
+    e.execution_type,
+    e.description,
+    e.isin,
+    e.investment_type,
+    e.marketplace,
+    e.units,
+    e.price_per_unit,
+    e.total_price,
+    e.fees,
+    e.execution_date
   );
   if (e.execution_type === 'sell') {
     const taxPaid = (((e.profit_amt! * e.pct_of_profit_taxed!) / 100) * Number(0.26375)).toFixed(2);
@@ -232,7 +258,13 @@ const buildInsertInvestments = (e: InvestmentAndTaxes) => {
           AND execution_type = %L --unique key of investments
       );
 `,
-      e.pct_of_profit_taxed, e.profit_amt, taxPaid, e.execution_date, e.isin, e.execution_date, e.execution_type
+      e.pct_of_profit_taxed,
+      e.profit_amt,
+      taxPaid,
+      e.execution_date,
+      e.isin,
+      e.execution_date,
+      e.execution_type
     );
   }
   return insertRow;
@@ -263,7 +295,14 @@ const buildInsertNewFoodItems = (e: FoodItem) => {
         TO_DATE('01.01.4000','DD.MM.YYYY')
       );
       `,
-    e.food_item, e.brand, e.store, e.main_macro, e.kcal_amount, e.weight, e.price, e.last_update
+    e.food_item,
+    e.brand,
+    e.store,
+    e.main_macro,
+    e.kcal_amount,
+    e.weight,
+    e.price,
+    e.last_update
   );
   return insertRow;
 };
