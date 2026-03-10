@@ -18,11 +18,14 @@ const authenticateUser = asyncHandler(async (request: Request, response: Respons
   logger.debug(
     'authentication.ts received request to verify jsonwebtoken and set request header values [userName] [userEmail] and [userId]'
   );
-  let token;
   if (request.headers.authorization && request.headers.authorization.startsWith('Bearer')) {
     const client = await pool.connect();
     try {
-      token = request.headers.authorization.split(' ')[1];
+      const token = request.headers.authorization.split(' ')[1];
+      if (!token) {
+        response.status(401);
+        throw new Error('User not authenticated due to missing token.');
+      }
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
       const user = decodedToken?.user;
       const query: ParameterizedQuery = buildFindUserById(user?.userId);
@@ -56,9 +59,9 @@ const authenticateUser = asyncHandler(async (request: Request, response: Respons
     } finally {
       client.release();
     }
-  }
-  if (!token) {
-    response.status(401).send('User not authenticated due to missing token.');
+  } else {
+    response.status(401);
+    throw new Error('authenticateUser via Bearer <jwt_token> has failed.');
   }
 });
 
