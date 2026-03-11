@@ -87,6 +87,7 @@ services:
       --reload-dir /app/api
       --timeout-keep-alive 90
       --log-level info
+      --loop uvloop
 
   fiscalismia-frontend:
     image: fiscalismia-frontend-dev:latest
