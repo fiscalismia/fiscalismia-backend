@@ -13,6 +13,7 @@ const {
   getAllDividends,
   getAllFixedIncome,
   getAllFoodPricesAndDiscounts,
+  getAllFoodPricesForExport,
   getCurrentlyDiscountedFoodPriceInformation,
   getAllSensitivitiesOfPurchase,
 
@@ -79,6 +80,7 @@ userSchemaRoutes.get('/investment_dividends', getAllDividends);
 userSchemaRoutes.get('/fixed_costs', getAllFixedCosts);
 userSchemaRoutes.get('/fixed_income', getAllFixedIncome);
 userSchemaRoutes.get('/food_prices_and_discounts', getAllFoodPricesAndDiscounts);
+userSchemaRoutes.get('/export/food_prices', getAllFoodPricesForExport);
 userSchemaRoutes.get('/discounted_foods_current', getCurrentlyDiscountedFoodPriceInformation);
 userSchemaRoutes.get('/sensitivities_of_purchase', getAllSensitivitiesOfPurchase);
 // getSpecificData

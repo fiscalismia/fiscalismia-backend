@@ -370,6 +370,24 @@ const getAllFoodPricesAndDiscounts = asyncHandler(async (_request: Request, resp
 });
 
 /**
+ * @description query fetching all data from table_food_prices
+ * @method HTTP GET
+ * @async asyncHandler passes exceptions within routes to errorHandler middleware
+ * @route /api/fiscalismia/export/food_prices
+ */
+const getAllFoodPricesForExport = asyncHandler(async (_request: Request, response: Response) => {
+  logger.http('read_postgresController received GET to /api/fiscalismia/export/food_prices');
+  const client = await pool.connect();
+  const result = await client.query(`SELECT
+  food_item, brand, store, main_macro, kcal_amount, weight, price, last_update
+  FROM table_food_prices
+  ORDER BY store, last_update`);
+  const results = { results: result ? result.rows : null };
+  response.status(200).send(results);
+  client.release();
+});
+
+/**
  * @description query fetching all discounted foods from v_food_price_overview
  * @method HTTP GET
  * @async asyncHandler passes exceptions within routes to errorHandler middleware
@@ -940,6 +958,7 @@ module.exports = {
   getAllDividends,
   getAllFixedIncome,
   getAllFoodPricesAndDiscounts,
+  getAllFoodPricesForExport,
   getCurrentlyDiscountedFoodPriceInformation,
   getAllSensitivitiesOfPurchase,
 
