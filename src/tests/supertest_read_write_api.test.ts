@@ -460,6 +460,10 @@ describe('supertest REST API testing entire REST functionality', () => {
     getRequestReturnsResult(done, '/food_prices_and_discounts');
   });
 
+  test('GET: export/food_prices', (done) => {
+    getRequestReturnsResult(done, '/export/food_prices');
+  });
+
   test('GET: discounted_foods_current', (done) => {
     getRequestReturnsResult(done, '/discounted_foods_current');
   });
