@@ -72,11 +72,19 @@ services:
       # mounted volume by applying a shared SELinux label.
       - ../fiscalismia-webscraper/main.py:/app/main.py:z
       - ../fiscalismia-webscraper/api/:/app/api:z
+      # Bind mount for /tmp/scrape_results overlays the tmpfs at /tmp, because
+      # Podman processes bind mounts after tmpfs. This makes scrape output files
+      # visible on the host for debugging
+      - ../fiscalismia-webscraper/scrape_results:/tmp/scrape_results:z
     networks:
       - fiscalismia-network
     # Binding directly to uvicorn app port skips nginx on port 5000 entirely
     ports:
       - "0.0.0.0:3003:3003/tcp"
+    # tmpfs provides a fast in-memory /tmp for Playwright browser temp files.
+    # Note: tmpfs is container-scoped and not visible on the host
+    tmpfs:
+      - /tmp:noexec,nosuid,size=512m
     # command overwrites entrypoint, essentially bypassing supervisord and nginx
     # in order for uvicorn hot reload to work on mounted directories
     command: >

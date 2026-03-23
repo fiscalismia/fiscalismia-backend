@@ -9,6 +9,7 @@
 - Rethink localbrowser storage evaluation, especially in regards to loginUserName, to prohibit forgery
 
 ### Low Prio
+- Switch to assymettric key encryption JWT encoding not static password due to forgery on jwt secret leak
 - Add POST Route for Variable Expenses Staging
 - Add Supertest for evaluation of this post route and the ETL process
 
