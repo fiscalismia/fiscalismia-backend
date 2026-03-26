@@ -76,6 +76,7 @@ services:
       # Podman processes bind mounts after tmpfs. This makes scrape output files
       # visible on the host for debugging
       - ../fiscalismia-webscraper/scrape_results:/tmp/scrape_results:z
+      - ../fiscalismia-webscraper/scrape_test:/tmp/scrape_test:z
     networks:
       - fiscalismia-network
     # Binding directly to uvicorn app port skips nginx on port 5000 entirely
