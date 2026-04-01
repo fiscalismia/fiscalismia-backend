@@ -15,7 +15,7 @@ WORKDIR /build-dir/
 COPY package-lock.json package.json .npmrc ./
 COPY tsconfig.json ./
 # run full installation
-RUN npm ci
+RUN npm ci --ignore-scripts --allow-git=none
 COPY src/ ./src
 RUN npm run build
 
@@ -30,8 +30,7 @@ RUN addgroup -g 1001 -S nodejs && adduser -S -H -u 1001 -s /sbin/nologin -G node
 
 # Set up Build Directory
 WORKDIR /fiscalismia-backend/
-COPY package-lock.json ./
-COPY package.json ./
+COPY package-lock.json package.json .npmrc ./
 COPY LICENSE ./
 # consume build arguments to expose them in subsequent stages
 ARG BACKEND_VERSION
@@ -44,7 +43,7 @@ ENV ENVIRONMENT=$ENVIRONMENT
 ENV CLOUD_DB=$CLOUD_DB
 
 # Install production packages
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts --allow-git=none && npm cache clean --force
 COPY --from=build /build-dir/dist ./dist
 
 # copy db init scripts for on-demand user schema creation
