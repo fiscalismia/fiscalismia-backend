@@ -12,8 +12,7 @@ ARG NGINX_CONF
 FROM node:24.14.0-alpine3.23 AS build
 WORKDIR /build-dir/
 # copy required files for installation and compilation
-COPY package-lock.json ./
-COPY package.json ./
+COPY package-lock.json package.json .npmrc ./
 COPY tsconfig.json ./
 # run full installation
 RUN npm ci
@@ -45,7 +44,7 @@ ENV ENVIRONMENT=$ENVIRONMENT
 ENV CLOUD_DB=$CLOUD_DB
 
 # Install production packages
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 COPY --from=build /build-dir/dist ./dist
 
 # copy db init scripts for on-demand user schema creation

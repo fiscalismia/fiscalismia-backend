@@ -113,7 +113,7 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
 2. **Install Dependencies:**
 
    ```bash
-   npm install
+   npm install --ignore-scripts
    ```
 
 3. **Environment Variables:**
