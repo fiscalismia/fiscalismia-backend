@@ -285,6 +285,9 @@ EOF
 ## Updating
 
 ```bash
+# Update npm
+volta install npm@11.11.1
+volta pin npm@11.11.1
 # list issues
 npm audit
 npm outdated
