@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 import { User } from '../utils/customTypes';
 
-require('dotenv').config();
+require('dotenv').config({ path: '/run/secrets/.env' });
 
 /**
  * generates a token encrypted via secret key to store a users' id

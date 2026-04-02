@@ -1,7 +1,7 @@
 // Database Connection
 const { Pool } = require('pg');
 const types = require('pg').types;
-require('dotenv').config();
+require('dotenv').config({ path: '/run/secrets/.env' });
 
 /**
  * node-postgres converts DATE and TIMESTAMP columns into the local time of the node process

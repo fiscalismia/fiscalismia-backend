@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
 const { buildFindUserById, logSqlStatement } = require('../utils/SQL_UTILS');
-require('dotenv').config();
+require('dotenv').config({ path: '/run/secrets/.env' });
 const { pool } = require('../utils/pgDbService');
 import { Request, Response } from 'express';
 import { ParameterizedQuery } from '../utils/customTypes';

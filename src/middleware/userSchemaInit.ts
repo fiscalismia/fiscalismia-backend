@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const logger = require('../utils/logger');
-require('dotenv').config();
+require('dotenv').config({ path: '/run/secrets/.env' });
 const { pool } = require('../utils/pgDbService');
 const format = require('pg-format');
 import { Request, Response } from 'express';

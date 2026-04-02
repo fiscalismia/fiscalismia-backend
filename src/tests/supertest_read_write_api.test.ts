@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import request from 'supertest';
+// do not specify container mounted .env path, since it is not available during tests
 require('dotenv').config();
 import { app } from '../app';
 import { InvestmentAndTaxes, UserSettingObject } from '../utils/customTypes';

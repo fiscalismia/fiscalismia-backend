@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '/run/secrets/.env' });
 
 const isProd = process.env.NODE_ENV === 'production';
 const isDemo = process.env.NODE_ENV === 'demo';

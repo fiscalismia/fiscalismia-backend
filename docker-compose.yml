@@ -38,14 +38,14 @@ services:
       pull: true
     environment:
       - CLOUD_DB=${CLOUD_DB:-false} # default is false. Overwrite in CLI
-    env_file:
-      - .env
     volumes:
       # The ':z' flag is required on SELinux-enabled systems (like Fedora/CentOS)
       # to relabel the host directory. This allows the container to access the
       # mounted volume by applying a shared SELinux label.
       - ./src:/fiscalismia-backend/src:z
       - ./public:/fiscalismia-backend/public:z
+      # file backed .env mount for local development - in production we use a RAM backed tmpfs that is shredded after container health check succeeds
+      - ./.env:/run/secrets/.env:ro,z
     networks:
       - fiscalismia-network
     ports:
