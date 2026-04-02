@@ -7,6 +7,9 @@
 
 # dotenv environment variables file
 .env
+backend.env
+database.env
+webscraper.env
 
 # logs
 logs/combined.log

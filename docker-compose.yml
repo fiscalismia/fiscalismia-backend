@@ -64,8 +64,6 @@ services:
         BUILD_VERSION: dev-latest
     environment:
       APP_VERSION: dev-latest
-    env_file:
-      - ../fiscalismia-webscraper/.env
     volumes:
       # The ':z' flag is required on SELinux-enabled systems (like Fedora/CentOS)
       # to relabel the host directory. This allows the container to access the
@@ -77,6 +75,8 @@ services:
       # visible on the host for debugging
       - ../fiscalismia-webscraper/scrape_results:/tmp/scrape_results:z
       - ../fiscalismia-webscraper/scrape_test:/tmp/scrape_test:z
+      # file backed .env mount for local development - in production we use a RAM backed tmpfs that is shredded after container health check succeeds
+      - ../fiscalismia-webscraper/.env:/run/secrets/.env:ro,z
     networks:
       - fiscalismia-network
     # Binding directly to uvicorn app port skips nginx on port 5000 entirely
@@ -105,8 +105,6 @@ services:
       context: ../fiscalismia-frontend
       dockerfile: Dockerfile.dev
       pull: true
-    env_file:
-      - ../fiscalismia-frontend/.env
     volumes:
       # The ':z' flag is required on SELinux-enabled systems (like Fedora/CentOS)
       # to relabel the host directory. This allows the container to access the
