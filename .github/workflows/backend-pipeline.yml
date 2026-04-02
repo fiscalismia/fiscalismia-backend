@@ -39,7 +39,7 @@ jobs:
       uses: actions/setup-node@v6.3.0
       # https://github.com/actions/setup-node
       with:
-        node-version: '24.14.0'
+        node-version: '24.14.1'
 
     - name: Install dependencies
       run: |

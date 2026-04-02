@@ -39,8 +39,8 @@ fiscalismia-backend consists of an express server running a REST API. Requests f
    See https://docs.volta.sh/guide/getting-started
 
    ```bash
-   volta install node@24.14.0
-   volta pin node@24.14.0
+   volta install node@24.14.1
+   volta pin node@24.14.1
    ```
 
 2. **Podman & Docker Compose** Ensure that Podman is installed in your local development environment. Get Podman [here](https://podman.io/docs/installation) and Docker Compose

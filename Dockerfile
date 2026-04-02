@@ -9,7 +9,7 @@ ARG CLOUD_DB
 ARG NGINX_CONF
 
 ### INITIAL SETUP ###
-FROM node:24.14.0-alpine3.23 AS build
+FROM node:24.14.1-alpine3.23 AS build
 WORKDIR /build-dir/
 # copy required files for installation and compilation
 COPY package-lock.json package.json .npmrc ./
@@ -22,7 +22,7 @@ RUN npm run build
 #     __   __   __   __        __  ___    __
 #    |__) |__) /  \ |  \ |  | /  `  |  | /  \ |\ |
 #    |    |  \ \__/ |__/ \__/ \__,  |  | \__/ | \|
-FROM node:24.14.0-alpine3.23
+FROM node:24.14.1-alpine3.23
 
 # add non priviledged system users to run their respective services
 RUN addgroup -g 101 -S nginx && adduser -S -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx nginx
