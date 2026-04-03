@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+if [ -f "${INITIAL_ADMIN_PW_FILE:-}" ]; then
+    ADMIN_PW="$(cat "$INITIAL_ADMIN_PW_FILE")"
+else
+    ADMIN_PW="changeit"
+    echo "WARNING: Using default admin password." >&2
+fi
+
 PG_CONNECTION="-U fiscalismia_api -d fiscalismia -v ON_ERROR_STOP=1"
 USER_SCHEMA="private_admin"
 SEARCH_PATH_CMD="SET search_path TO $USER_SCHEMA"
@@ -20,7 +27,7 @@ psql $PG_CONNECTION <<-EOSQL
     INSERT INTO public.um_users (username, email, password, schema) VALUES
     ('admin',
     'herp_derp@hotmail.com',
-    crypt( 'changeit', gen_salt('bf',12)),
+    crypt( '$ADMIN_PW', gen_salt('bf',12)),
     'private_admin'
     );
 
