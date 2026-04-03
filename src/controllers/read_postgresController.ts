@@ -379,7 +379,7 @@ const getAllFoodPricesForExport = asyncHandler(async (_request: Request, respons
   logger.http('read_postgresController received GET to /api/fiscalismia/export/food_prices');
   const client = await pool.connect();
   const result = await client.query(`SELECT
-  food_item, brand, store, main_macro, kcal_amount, weight, price, last_update
+  food_item, brand, store, main_macro, kcal_amount, weight, price::double precision, last_update
   FROM table_food_prices
   ORDER BY store, last_update`);
   const results = { results: result ? result.rows : null };
