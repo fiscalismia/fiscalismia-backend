@@ -80,6 +80,7 @@ const healthCheck = asyncHandler(async (_request: Request, response: Response) =
   response.status(200).send({
     status: 'OK',
     version: `${process.env.BACKEND_VERSION ? process.env.BACKEND_VERSION : 'local-development'}`,
+    service: 'fiscalismia-backend',
     node_uptime_hours: nodeUptime,
     server_uptime_hours: serverUptime,
     hostname: hostname,
